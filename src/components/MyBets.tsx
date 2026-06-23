@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { Bet } from "@/types/game";
+import type { Bet } from "@/types/colorGame";
 
 interface MyBetsProps {
   bets: Bet[];
@@ -32,7 +32,7 @@ export default function MyBets({ bets }: MyBetsProps) {
           >
             <div className="flex items-center gap-2.5">
               <div className={cn(
-                "w-2 h-2 rounded-full flex-shrink-0",
+                "w-2 h-2 rounded-full shrink-0",
                 bet.status === "won" ? "bg-green-500" : "bg-red-500"
               )} />
               <div>

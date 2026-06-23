@@ -1,9 +1,9 @@
-import type { ColorChoice, RoundResult, GameConfig } from "@/types/game";
+import type { ColorChoice, RoundResult, GameConfig } from "@/types/colorGame";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 export const DEFAULT_CONFIG: GameConfig = {
-  roundDuration: 30,
+  roundDuration: 60,
   lockoutSeconds: 5,
   startingBalance: 1000,
   multipliers: {
@@ -83,26 +83,26 @@ export async function fetchRoundResult(roundId: string): Promise<RoundResult> {
 // ─── Payout calculator ───────────────────────────────────────────────────────
 
 export function calculatePayout(
-  choice: string,
+  choice: {size:string, number:number, color:ColorChoice},
   result: RoundResult,
   amount: number,
   multipliers: GameConfig["multipliers"]
 ): { won: boolean; payout: number } {
   let won = false;
 
-  if (choice === result.color) {
+  if (choice.color === result.color) {
     won = true;
-  } else if (choice === result.bigSmall) {
+  } else if (choice.size === result.bigSmall) {
     won = true;
   } else if (
-    (choice === "red" && result.number === 0) ||
-    (choice === "green" && result.number === 5)
+    (choice.color === "red" && result.number === 0) ||
+    (choice.color === "green" && result.number === 5)
   ) {
     // 0 is violet+red → red bets get half payout, violet gets full
     won = true;
   }
 
-  const multiplier = multipliers[choice as keyof typeof multipliers] ?? 2;
+  const multiplier = 2;
   const payout = won ? amount * multiplier : 0;
   return { won, payout };
 }

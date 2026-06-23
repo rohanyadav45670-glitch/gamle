@@ -1,17 +1,18 @@
-import Navbar from "@/components/Navbar";
-import FeaturedGame from "@/components/FeaturedGame";
-import GameSection from "@/components/GameSection";
+import Navbar from "@/components/home/Navbar";
+import FeaturedGame from "@/components/home/FeaturedGame";
+import GameSection from "@/components/home/GameSection";
 import JackpotBanner from "@/components/JackpotBanner";
-import BottomNav from "@/components/BottomNav";
+import BottomNav from "@/components/home/BottomNav";
+import PageWrapper from "@/components/PageWrapper";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const EVOPLAY_GAMES = [
-  { id: "egypt-gods", title: "Egypt Gods", provider: "Evoplay", rtp: 96 },
-  { id: "penalty", title: "Penalty Shoot-out: Street", provider: "Evoplay", rtp: 97 },
-  { id: "magic-wheel", title: "Magic Wheel", provider: "Evoplay", rtp: 95 },
-  { id: "scratch", title: "Scratch Match", provider: "Evoplay", rtp: 96 },
-  { id: "bingo-task", title: "Bingo Task", provider: "Evoplay", rtp: 95 },
+  { id: "egypt-gods", title: "Egypt Gods", provider: "Evoplay", rtp: 96, bannerUrl: "/games-banner/aviator.jpg", gameLink:"/aviator" },
+  { id: "penalty", title: "Penalty Shoot-out: Street", provider: "Evoplay", rtp: 97, bannerUrl:"/games-banner/color-cover.jpg", gameLink:"color-game" },
+  { id: "magic-wheel", title: "Magic Wheel", provider: "Evoplay", rtp: 95, bannerUrl:"/games-banner/HeadsTails_270x270.jpg", gameLink:"/heads-tails" },
+  // { id: "scratch", title: "Scratch Match", provider: "Evoplay", rtp: 96 },
+  // { id: "bingo-task", title: "Bingo Task", provider: "Evoplay", rtp: 95 },
 ];
 
 const POPULAR_GAMES = [
@@ -38,7 +39,7 @@ export default function CasinoHomePage() {
       <Navbar />
 
       {/* Scrollable content — pb ensures content isn't hidden behind bottom nav */}
-      <main className="pb-24 max-w-md mx-auto">
+      <PageWrapper>
         {/* Featured / hero game */}
         <FeaturedGame
           title="Heads & Tails"
@@ -56,22 +57,22 @@ export default function CasinoHomePage() {
         />
 
         {/* Popular Games */}
-        <GameSection
+        {/* <GameSection
           title="Popular Games"
           games={POPULAR_GAMES}
           cardSize="md"
-        />
+        /> */}
 
         {/* New Games */}
-        <GameSection
+        {/* <GameSection
           title="New Releases"
           games={NEW_GAMES}
           showSeeAll
           cardSize="sm"
-        />
+        /> */}
 
         {/* Live Casino section */}
-        <GameSection
+        {/* <GameSection
           title="Live Casino"
           games={[
             { id: "baccarat", title: "Speed Baccarat", provider: "Evolution", rtp: 98.9 },
@@ -81,11 +82,11 @@ export default function CasinoHomePage() {
           ]}
           showSeeAll
           cardSize="sm"
-        />
+        /> */}
 
         {/* Jackpot counter */}
         <JackpotBanner />
-      </main>
+      </PageWrapper>
 
       {/* Fixed bottom tab bar */}
       <BottomNav />

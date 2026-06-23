@@ -29,7 +29,7 @@ export default function JackpotBanner() {
   return (
     <section className="pt-4 pb-2">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 mb-3">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="text-white font-bold text-base">Casino Jackpots</h3>
         <button className="flex items-center gap-0.5 text-[#f5a623] text-sm font-semibold">
           See All <ChevronRight className="w-4 h-4" />
@@ -37,7 +37,7 @@ export default function JackpotBanner() {
       </div>
 
       {/* Jackpot Cards */}
-      <div className="px-4 space-y-2">
+      <div className="space-y-2">
         {JACKPOTS.map((jackpot, i) => (
           <div
             key={jackpot.name}
