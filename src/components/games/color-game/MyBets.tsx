@@ -36,7 +36,7 @@ export default function MyBets({ bets }: MyBetsProps) {
                 bet.status === "won" ? "bg-green-500" : "bg-red-500"
               )} />
               <div>
-                <p className="text-white text-xs font-semibold capitalize">{bet.choice}</p>
+                <p className="text-white text-xs font-semibold capitalize">{bet.choice.color}</p>
                 <p className="text-white/40 text-[10px] font-mono">#{bet.roundId.slice(-5)}</p>
               </div>
             </div>
