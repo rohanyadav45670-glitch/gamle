@@ -1,7 +1,7 @@
 import Navbar from "@/components/home/Navbar";
 import FeaturedGame from "@/components/home/FeaturedGame";
 import GameSection from "@/components/home/GameSection";
-import JackpotBanner from "@/components/JackpotBanner";
+import JackpotBanner from "@/components/home/JackpotBanner";
 import BottomNav from "@/components/home/BottomNav";
 import PageWrapper from "@/components/PageWrapper";
 

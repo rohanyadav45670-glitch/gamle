@@ -9,7 +9,7 @@ import GameTimer from "@/components/games/color-game/GameTimer";
 import ResultReveal from "@/components/games/color-game/ResultReveal";
 import BettingPanel from "@/components/games/color-game/BettingPanel";
 import GameHistory from "@/components/games/color-game/GameHistory";
-import MyBets from "@/components/MyBets";
+import MyBets from "@/components/games/color-game/MyBets";
 import PageWrapper from "@/components/PageWrapper";
 import GameHeader from "@/components/games/shared/Header";
 import { useDispatch, useSelector } from "react-redux";
