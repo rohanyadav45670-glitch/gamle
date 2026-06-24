@@ -10,7 +10,6 @@ import ResultReveal from "@/components/games/color-game/ResultReveal";
 import BettingPanel from "@/components/games/color-game/BettingPanel";
 import GameHistory from "@/components/games/color-game/GameHistory";
 import MyBets from "@/components/games/color-game/MyBets";
-import PageWrapper from "@/components/PageWrapper";
 import GameHeader from "@/components/games/shared/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/app/store/store";
@@ -102,7 +101,7 @@ export default function ColorGamePage() {
                       <span className="text-white/30 text-[10px]">Last:{state.history.length}</span>
                       {state.history.slice(0, 8).map((r, i) => (
                         <div
-                          key={r.roundId}
+                          key={i}
                           className={cn(
                             "w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] transition-all",
                             i === 0 && "scale-110 ring-2 ring-white/20",

@@ -20,9 +20,9 @@ export default function MyBets({ bets }: MyBetsProps) {
     <div className="px-4 pb-4">
       <h3 className="text-white font-bold text-sm mb-3">My Bets</h3>
       <div className="space-y-2">
-        {bets.slice(0, 20).map((bet) => (
+        {bets.slice(0, 20).map((bet, i) => (
           <div
-            key={bet.id}
+            key={bet.id+i}
             className={cn(
               "flex items-center justify-between rounded-xl px-3 py-2.5 border",
               bet.status === "won"

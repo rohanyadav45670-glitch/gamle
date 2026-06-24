@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Zap, CreditCard, Building2, Smartphone, CheckCircle2, Loader2, ArrowDownLeft, ArrowUpRight, Gamepad2, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Zap, CreditCard, Building2, Smartphone, CheckCircle2, Loader2, ArrowDownLeft, ArrowUpRight, Gamepad2, Trophy, Copy,  Landmark, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { useGetMyDepositsQuery } from "@/app/store/apis/depositsSlice";
+import axios from "axios";
+import { BASE_URL } from "@/lib/APIROTES";
 
 const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 
@@ -86,6 +88,7 @@ export default function DepositPanel({ balance, onDeposit }: DepositPanelProps) 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+
   const [filter, setFilter] = useState<TxType>("none");
 
   const filtered = MOCK_TRANSACTIONS.filter(
@@ -100,7 +103,7 @@ export default function DepositPanel({ balance, onDeposit }: DepositPanelProps) 
       else await new Promise((r) => setTimeout(r, 1400)); // demo delay
 
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      // setTimeout(() => setSuccess(false), 3000);
     } catch (error: any) {
       toast.error(error.message || "Deposit failed. Please try again.");
     } finally {
@@ -109,24 +112,26 @@ export default function DepositPanel({ balance, onDeposit }: DepositPanelProps) 
   }
 
   if (success) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 gap-4">
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(34,197,94,0.15)", border: "2px solid rgba(34,197,94,0.4)" }}
-        >
-          <CheckCircle2 className="w-8 h-8" style={{ color: "#4ade80" }} />
-        </div>
-        <div className="text-center">
-          <p className="font-black text-lg" style={{ color: "#4ade80", fontFamily: "'Orbitron', sans-serif" }}>
-            ₹{amount.toLocaleString("en-IN")} Added!
-          </p>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
-            Your balance has been updated
-          </p>
-        </div>
-      </div>
-    );
+    // return (
+    //   <div className="flex flex-col items-center justify-center py-12 px-4 gap-4">
+    //     <div
+    //       className="w-16 h-16 rounded-full flex items-center justify-center"
+    //       style={{ background: "rgba(34,197,94,0.15)", border: "2px solid rgba(34,197,94,0.4)" }}
+    //     >
+    //       <CheckCircle2 className="w-8 h-8" style={{ color: "#4ade80" }} />
+    //     </div>
+    //     <div className="text-center">
+    //       <p className="font-black text-lg" style={{ color: "#4ade80", fontFamily: "'Orbitron', sans-serif" }}>
+    //         ₹{amount.toLocaleString("en-IN")} Added!
+    //       </p>
+    //       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
+    //         Your balance has been updated
+    //       </p>
+    //     </div>
+    //   </div>
+    // );
+
+    return <DepositDetails/>
   }
 
   return (
@@ -342,6 +347,201 @@ export default function DepositPanel({ balance, onDeposit }: DepositPanelProps) 
         </div>
       )}
 
+    </div>
+  );
+}
+
+interface PaymentConfig {
+  upi: {
+    upiId: string;
+    upiName: string;
+    qrImage: string;
+  };
+  bank: {
+    accountName: string;
+    accountNumber: string;
+    ifsc: string;
+    bankName: string;
+    branchName: string;
+  };
+}
+
+export function DepositDetails() {
+  const [loading, setLoading] = useState(true);
+  const [paymentConfig, setPaymentConfig] =
+    useState<PaymentConfig | null>(null);
+
+  useEffect(() => {
+    fetchPaymentConfig();
+  }, []);
+
+  const fetchPaymentConfig = async () => {
+    try {
+      const { data } = await axios.get(
+        `${BASE_URL}/admin/payment-details`
+      );
+
+      setPaymentConfig(data.data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load payment details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied");
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-gray-400">
+        Loading payment details...
+      </div>
+    );
+  }
+
+  if (!paymentConfig) {
+    return (
+      <div className="py-20 text-center text-red-400">
+        Payment details unavailable
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 px-4 py-6">
+      {/* Notice */}
+      <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+        <p className="text-center text-sm leading-6 text-yellow-300">
+          Pay using any method below. After successful
+          payment and verification, your wallet balance
+          will be updated within 24 hours.
+        </p>
+      </div>
+
+      {/* QR */}
+      {paymentConfig.upi.qrImage && (
+        <div className="rounded-3xl border border-yellow-500/20 bg-[#11151c] p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <QrCode className="h-5 w-5 text-yellow-400" />
+            <span className="font-medium text-yellow-400">
+              Scan & Pay
+            </span>
+          </div>
+
+          <div className="flex justify-center">
+            <img
+              src={paymentConfig.upi.qrImage}
+              alt="QR"
+              className="h-60 w-60 rounded-2xl bg-white p-2"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* UPI */}
+      <div className="rounded-2xl bg-[#11151c] p-4">
+        <p className="mb-2 text-xs text-gray-500">
+          UPI ID
+        </p>
+
+        <div className="flex items-center justify-between">
+          <span className="text-white">
+            {paymentConfig.upi.upiId}
+          </span>
+
+          <button
+            onClick={() =>
+              copy(paymentConfig.upi.upiId)
+            }
+          >
+            <Copy
+              size={18}
+              className="text-yellow-400"
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Bank Details */}
+      <div className="rounded-2xl bg-[#11151c] p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <Landmark className="h-5 w-5 text-yellow-400" />
+          <span className="font-medium text-white">
+            Bank Transfer
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <InfoRow
+            label="Account Holder"
+            value={paymentConfig.bank.accountName}
+          />
+
+          <InfoRow
+            label="Account Number"
+            value={paymentConfig.bank.accountNumber}
+            copyable
+          />
+
+          <InfoRow
+            label="IFSC Code"
+            value={paymentConfig.bank.ifsc}
+            copyable
+          />
+
+          <InfoRow
+            label="Bank Name"
+            value={paymentConfig.bank.bankName}
+          />
+
+          <InfoRow
+            label="Branch"
+            value={paymentConfig.bank.branchName}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  copyable = false,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs text-gray-500">
+          {label}
+        </p>
+
+        <p className="mt-1 text-sm text-white">
+          {value}
+        </p>
+      </div>
+
+      {copyable && (
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(value);
+            toast.success("Copied");
+          }}
+        >
+          <Copy
+            size={16}
+            className="text-yellow-400"
+          />
+        </button>
+      )}
     </div>
   );
 }

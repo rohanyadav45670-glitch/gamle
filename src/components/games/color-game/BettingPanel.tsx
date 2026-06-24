@@ -57,6 +57,25 @@ export default function BettingPanel({
     onPlaceBet({ color: selectedColor, size: selectedSize, number: selectedNumber }, amount);
   }
 
+  function handleSelectColor(value:ColorChoice){
+    setSelectedNumber(null);
+    setSelectedSize(null);
+    if(value == selectedColor) return setSelectedColor(null);
+    setSelectedColor(value);
+  }
+  function handleSelectNumber(i:number){
+    setSelectedColor(null);
+    setSelectedSize(null);
+    if(i == selectedNumber) return setSelectedNumber(null);
+    setSelectedNumber(i)
+  }
+  function handleSelectSize(v:"big" | "small"){
+    setSelectedColor(null);
+    setSelectedNumber(null);
+    if(v == selectedSize) return setSelectedSize(null);
+    setSelectedSize(v)
+  }
+
   const hasBet = currentBet !== null;
 
   return (
@@ -69,7 +88,7 @@ export default function BettingPanel({
             <button
               key={value}
               disabled={isLocked || hasBet}
-              onClick={() => setSelectedColor(value)}
+              onClick={() => handleSelectColor(value)}
               className={cn(
                 "relative flex flex-col items-center justify-center py-3 rounded-2xl border-2 transition-all duration-150 font-bold text-sm gap-0.5",
                 "disabled:opacity-40 disabled:cursor-not-allowed",
@@ -93,29 +112,13 @@ export default function BettingPanel({
       {/* ------- Number Row ------------------------------- */}
       <div className="pt-4 space-y-4">
         <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-2">Pick Number</p>
-        {/* {isLocked || hasBet ? (
-          <div className="flex gap-1.5 items-center">
-            <span className="text-white/30 text-[10px]">Last:</span>
-            {currentBet && (
-              <div
-                className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] transition-all",
-                  currentBet.choice === "red" && "bg-red-500",
-                  currentBet.choice === "green" && "bg-green-500",
-                  currentBet.choice === "violet" && "bg-violet-500",
-                )}
-              >
-                {currentBet.choice === "big" ? "5–9" : currentBet.choice === "small" ? "0–4" : ""}
-              </div>
-            )}
-          </div>
-        ) : ( */}
+       
         <div className="flex gap-1.5 items-center flex-wrap">
           {Array.from({ length: 10 }).map((_, i) => (
             <button
               key={i}
               disabled={isLocked || hasBet}
-              onClick={() => setSelectedNumber(i)}
+              onClick={() => handleSelectNumber(i)}
               className={cn(
                 "w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all duration-150",
                 "disabled:opacity-40 disabled:cursor-not-allowed",
@@ -128,7 +131,7 @@ export default function BettingPanel({
             </button>
           ))}
         </div>
-        {/* //  )} */}
+    
       </div>
 
       {/* ── Big / Small Row ───────────────────────────────────── */}
@@ -139,7 +142,7 @@ export default function BettingPanel({
             <button
               key={v}
               disabled={isLocked || hasBet}
-              onClick={() => setSelectedSize(v)}
+              onClick={() => handleSelectSize(v)}
               className={cn(
                 "py-2.5 rounded-2xl border-2 font-bold text-sm transition-all duration-150 capitalize",
                 "disabled:opacity-40 disabled:cursor-not-allowed",
@@ -201,7 +204,18 @@ export default function BettingPanel({
           <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center justify-between">
             <div>
               <p className="text-white/50 text-xs">Active Bet</p>
-              <p className="text-white font-bold capitalize">{`${currentBet?.choice.color}, ${currentBet.choice.size}, ${currentBet.choice.number}`} · ₹{currentBet?.amount}</p>
+
+              <p className="text-white font-bold capitalize">
+                {[
+                  currentBet?.choice.color,
+                  currentBet?.choice.size,
+                  currentBet?.choice.number,
+                ]
+                  .filter(Boolean)
+                  .join(" • ")}{" "}
+                — ₹{currentBet?.amount}
+              </p>
+
             </div>
             <div className="text-right">
               <p className="text-white/50 text-xs">Potential Win</p>
@@ -222,10 +236,10 @@ export default function BettingPanel({
       ) : (
         <Button
           onClick={handleConfirm}
-          disabled={!selectedColor || isLocked || amount <= 0 || amount > balance}
+          disabled={(!selectedColor&&!selectedNumber&&!selectedSize) || isLocked || amount <= 0 || amount > balance}
           className="w-full h-12 rounded-2xl font-black text-base bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black disabled:opacity-40 shadow-lg shadow-amber-900/30"
         >
-          {isLocked ? "🔒 Bets Locked" : !selectedColor ? "Choose a colour first" : `Confirm Bet · ₹${amount}`}
+          {isLocked ? "🔒 Bets Locked" : !selectedColor ? "Choose a bet first" : `Confirm Bet · ₹${amount}`}
         </Button>
       )}
     </div>

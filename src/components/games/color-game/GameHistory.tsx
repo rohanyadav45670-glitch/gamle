@@ -15,41 +15,19 @@ const DOT_COLORS: Record<string, string> = {
   violet: "bg-violet-500",
 };
 
-function ColorDot({ number }: { number: number }) {
-  const colors = numberToDisplayColors(number);
-  if (colors.length === 1) {
-    return (
-      <div className={cn(
-        "w-7 h-7 rounded-full flex items-center justify-center text-white font-black text-[11px] shadow-md shrink-0",
-        colors[0] === "red" && "bg-linear-to-br from-red-500 to-rose-600",
-        colors[0] === "green" && "bg-linear-to-br from-green-500 to-emerald-600",
-        colors[0] === "violet" && "bg-linear-to-br from-violet-500 to-purple-600",
-      )}>
-        {number}
-      </div>
-    );
-  }
-  // dual color (0 or 5)
+function ColorDot({ color, number }: { number: number, color: "red" | "green" | "violet" }) {
   return (
-    <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 relative shadow-md">
-      <div className={cn(
-        "absolute inset-0",
-        colors[0] === "violet" && "bg-violet-600",
-        colors[0] === "red" && "bg-red-600",
-        colors[0] === "green" && "bg-green-600",
-      )} />
-      <div className={cn(
-        "absolute right-0 top-0 bottom-0 w-1/2",
-        colors[1] === "red" && "bg-red-500",
-        colors[1] === "green" && "bg-green-500",
-        colors[1] === "violet" && "bg-violet-500",
-      )} />
-      <span className="absolute inset-0 flex items-center justify-center text-white font-black text-[11px]">
-        {number}
-      </span>
+    <div className={cn(
+      "w-7 h-7 rounded-full flex items-center justify-center text-white font-black text-[11px] shadow-md shrink-0",
+      color === "red" && "bg-linear-to-br from-red-500 to-rose-600",
+      color === "green" && "bg-linear-to-br from-green-500 to-emerald-600",
+      color === "violet" && "bg-linear-to-br from-violet-500 to-purple-600",
+    )}>
+      {number}
     </div>
   );
 }
+
 
 export default function GameHistory({ history }: GameHistoryProps) {
   const [tab, setTab] = useState<"dots" | "table">("dots");
@@ -81,9 +59,12 @@ export default function GameHistory({ history }: GameHistoryProps) {
           {history.length === 0 ? (
             <p className="text-white/30 text-sm w-full text-center py-4">No rounds yet</p>
           ) : (
-            history.slice(0, 30).map((r) => (
-              <ColorDot key={r.roundId} number={r.number} />
-            ))
+            history.slice(0, 30).map((r, i) => {
+              console.log("Loka lu ", r)
+              return (
+                <ColorDot key={i} number={r.number} color={r.color} />
+              )
+            })
           )}
         </div>
       ) : (
@@ -106,10 +87,10 @@ export default function GameHistory({ history }: GameHistoryProps) {
               ) : (
                 history.slice(0, 15).map((r, i) => (
                   <tr
-                    key={r.roundId}
+                    key={i}
                     className={cn("border-t border-white/5", i === 0 && "bg-white/5")}
                   >
-                    <td className="px-3 py-2 text-white/40 font-mono">#{r.roundId.slice(-5)}</td>
+                    <td className="px-3 py-2 text-white/40 font-mono">#{r.roundId?.slice(-5)}</td>
                     <td className="px-3 py-2">
                       <span className="text-white font-bold">{r.number}</span>
                     </td>
