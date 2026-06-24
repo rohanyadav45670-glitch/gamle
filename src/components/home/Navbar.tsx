@@ -30,7 +30,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <span className="text-[#f5a623] font-black text-2xl tracking-tight font-['Orbitron',sans-serif]">
-          odds<span className="text-white">96</span>
+          LOTUS<span className="text-white">24</span>
         </span>
 
         {/* Actions */}
