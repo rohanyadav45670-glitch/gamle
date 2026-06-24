@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, ChevronLeft } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface FeaturedGameProps {
   title: string;
@@ -20,6 +21,8 @@ export default function FeaturedGame({
   imageUrl,
   category = "Casino",
 }: FeaturedGameProps) {
+  const route = useRouter();
+
   return (
     <section className="pt-3 pb-2">
       {/* Breadcrumb */}
@@ -61,17 +64,18 @@ export default function FeaturedGame({
           <div className="flex gap-2">
             <Button
               size="sm"
+              onClick={()=>route.push("/heads-tails")}
               className="flex-1 bg-[#f5a623] hover:bg-[#e09410] text-black font-bold rounded-xl text-sm h-9"
             >
-              Log In
+              Play
             </Button>
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               className="flex-1 border-white/30 text-white hover:bg-white/10 font-bold rounded-xl text-sm h-9 bg-transparent"
             >
               Demo
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

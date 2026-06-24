@@ -1,31 +1,39 @@
 "use client";
 
-import { Home, Menu, LayoutGrid, Plane, Trophy } from "lucide-react";
+import { Home, Menu, LayoutGrid, Plane, Trophy, Wallet } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", Icon: Home },
-  { id: "menu", label: "Menu", Icon: Menu },
-  { id: "games", label: "All Games", Icon: LayoutGrid },
-  { id: "aviator", label: "Aviator", Icon: Plane },
-  { id: "sports", label: "Sports", Icon: Trophy },
+  { id: "home", label: "Home", Icon: Home, link:"/home" },
+  // { id: "menu", label: "Menu", Icon: Menu },
+  { id: "games", label: "All Games", Icon: LayoutGrid, link:"/home" },
+  { id: "aviator", label: "Aviator", Icon: Plane , link:"/aviator"},
+  { id: "wallet", label: "Wallet", Icon: Wallet, link:"/wallet" },
 ];
 
 export default function BottomNav() {
+  const route =  useRouter();
   const [active, setActive] = useState("home");
+
+  function handleClick(id:string, link:string){
+    route.push(link);
+
+    setActive(id)
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0f1117]/98 backdrop-blur-md border-t border-white/10">
       <div className="flex items-stretch max-w-md mx-auto">
-        {NAV_ITEMS.map(({ id, label, Icon }) => {
+        {NAV_ITEMS.map(({ id, link, label, Icon }) => {
           const isActive = active === id;
           const isAviator = id === "aviator";
 
           return (
             <button
               key={id}
-              onClick={() => setActive(id)}
+              onClick={() => handleClick(id,link )}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors relative",
                 isActive && !isAviator && "text-[#f5a623]",
