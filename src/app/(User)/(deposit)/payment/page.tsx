@@ -34,7 +34,7 @@ export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const amount = Number(searchParams.get("amount")!);
+  const amount = Number(searchParams.get("amount") || 500);
   const method = searchParams.get("method") || "upi"; // Default to QR if not specified
   const coupon = searchParams.get("coupon") || null; // Optional coupon code
 
