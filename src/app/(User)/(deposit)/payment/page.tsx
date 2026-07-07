@@ -34,7 +34,11 @@ export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const amount = Number(searchParams.get("amount") || 500);
+  const [amount, setAmount] = useState(500);
+  useEffect(() => {
+    setAmount(Number(searchParams.get("amount") ?? 0));
+  }, [searchParams]);
+
   const method = searchParams.get("method") || "upi"; // Default to QR if not specified
   const coupon = searchParams.get("coupon") || null; // Optional coupon code
 
@@ -83,13 +87,13 @@ export default function PaymentPage() {
     handleDeposit(amount, utr, method, paymentConfig?.bank)
       .then(() => {
         setLoading(false);
-        toast.success("Deposit request submitted successfully!", {position: "top-center", });
+        toast.success("Deposit request submitted successfully!", { position: "top-center", });
         router.push("/deposit-submitted");
       })
       .catch((error) => {
         setLoading(false);
         console.log(error);
-        toast.error(error.message || "Failed to submit deposit request.", {position: "top-center"});
+        toast.error(error.message || "Failed to submit deposit request.", { position: "top-center" });
       });
 
   }
