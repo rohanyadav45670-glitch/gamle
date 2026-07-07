@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { CoinSide } from "@/app/(Games)/heads-tails/page";
+import type { CoinSide } from "@/hooks/games/useHeadsTails";
 
 interface Coin3DProps {
   flipping: boolean;
