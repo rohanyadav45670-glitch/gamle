@@ -5,7 +5,13 @@ import Link from "next/link";
 import {
   ChevronLeft, LogOut, Copy, Check, Shield, Star,
   TrendingUp, TrendingDown, Wallet, Clock, ChevronRight,
-  Bell, HelpCircle, Lock, Smartphone, Gift
+  Bell, HelpCircle, Lock, Smartphone, Gift,
+  Settings,
+  Headphones,
+  ShieldCheck,
+  Landmark,
+  Users,
+  History
 } from "lucide-react";
 import type { User, Wallet as WalletInterface } from "@/types/auth";
 import { getVipInfo, VIP_LEVELS } from "@/lib/authApi";
@@ -154,7 +160,7 @@ export default function ProfilePage({ wallet, user = MOCK_USER, onLogout }: Prof
 
         {/* Balance row */}
         <div
-          className="mt-4 flex flex-wrap items-center justify-between rounded-2xl px-4 py-3"
+          className="mt-4 flex flex-col flex-wrap justify-between rounded-2xl px-4 py-3"
           style={{ background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.15)" }}
         >
           <div>
@@ -163,27 +169,217 @@ export default function ProfilePage({ wallet, user = MOCK_USER, onLogout }: Prof
               ₹{wallet?.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 }) || 0}
             </p>
           </div>
-          <div className="flex gap-2">
+
+
+          <div className="grid grid-cols-2 mt-2 gap-2.5">
             <button
-              onClick={() => route.push("/wallet")}
-              className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+              onClick={() => route.push("/deposit")}
+              className="py-2.5 rounded-xl font-bold text-sm transition-all"
+              style={{
+                background: "linear-gradient(135deg,#16a34a,#22c55e)",
+                color: "#fff",
+                boxShadow: "0 3px 12px rgba(34,197,94,0.28)",
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 12,
+                letterSpacing: "0.5px",
+              }}
+            >
+              + DEPOSIT
+            </button>
+            <button
+              onClick={() => route.push("/withdraw")}
+              className="py-2.5 rounded-xl font-bold text-sm transition-all"
+              style={{
+                background: "linear-gradient(135deg,#7c3aed,#a855f7)",
+                color: "#fff",
+                boxShadow: "0 3px 12px rgba(168,85,247,0.25)",
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 12,
+                letterSpacing: "0.5px",
+              }}
+            >
+              − WITHDRAW
+            </button>
+          </div>
+
+          {/* <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => route.push("/deposit")}
+              className="px-4 py-2 rounded-xl text-md font-bold transition-all"
               style={{ background: "linear-gradient(135deg,#16a34a,#22c55e)", color: "#fff", boxShadow: "0 2px 12px rgba(34,197,94,0.3)" }}
             >
-              Wallet
+              Deposit
             </button>
-            {/* <button
-              className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+
+            <button
+              onClick={() => route.push("/withdraw")}
+              className="px-4 py-2 rounded-xl text-md font-bold transition-all"
               style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
             >
               Withdraw
-            </button> */}
-          </div>
+            </button>
+          </div> */}
+
         </div>
       </div>
 
+      <div className="space-y-2 px-4 mt-6">
+
+        <MenuItem
+          icon={<Wallet size={18} />}
+          title="Wallet"
+          subtitle="Deposit, Withdraw & Balance"
+          href="/wallet"
+        />
+
+        {/* <MenuItem
+          icon={<History size={18} />}
+          title="Transactions"
+          subtitle="Payment history"
+          href="/transactions"
+        /> */}
+
+        {/* <MenuItem
+          icon={<Gift size={18} />}
+          title="Bonuses"
+          subtitle="Offers & Rewards"
+          href="/bonus"
+        /> */}
+
+        {/* <MenuItem
+          icon={<Users size={18} />}
+          title="Refer & Earn"
+          subtitle="Invite your friends"
+          href="/refer"
+        /> */}
+
+        {/* <MenuItem
+          icon={<Landmark size={18} />}
+          title="Bank Accounts"
+          subtitle="Manage bank details"
+          href="/bank"
+        /> */}
+
+        {/* <MenuItem
+          icon={<ShieldCheck size={18} />}
+          title="KYC Verification"
+          subtitle="Verify your account"
+          href="/kyc"
+        /> */}
+
+        <MenuItem
+          icon={<Headphones size={18} />}
+          title="Support"
+          subtitle="24×7 Help Center"
+          href="#"
+        />
+
+        <MenuItem
+          icon={<Settings size={18} />}
+          title="Settings"
+          subtitle="Privacy & Security"
+          href="#"
+        />
+
+      </div>
+
+      <div className="p-4 mt-2 mb-10">
+
+        <MenuItem
+          danger
+          icon={<LogOut size={18} />}
+          title="Logout"
+          subtitle="Sign out from this account"
+          onClick={onLogout}
+        />
+
+      </div>
     </div>
   );
 }
+
+
+
+interface MenuItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  href?: string;
+  onClick?: () => void;
+  danger?: boolean;
+}
+
+function MenuItem({
+  icon,
+  title,
+  subtitle,
+  href,
+  onClick,
+  danger,
+}: MenuItemProps) {
+  const route = useRouter();
+
+  return (
+    <button
+      onClick={() => {
+        if (onClick) return onClick();
+        if (href) route.push(href);
+      }}
+      className={`w-full rounded-lg
+      flex items-center gap-4
+      px-4 py-2
+      transition-all duration-200
+      ${danger
+          ? "bg-red-500/15 hover:bg-red-500/20"
+          : "bg-[#161b27] hover:bg-[#202638]"
+        }`}
+    >
+      <div
+        className={`w-8 h-8 rounded-xl flex items-center justify-center
+        ${danger
+            ? "bg-red-500/10 text-red-400"
+            : "bg-[#fbbf24]/10 text-[#fbbf24]"
+          }`}
+      >
+        {icon}
+      </div>
+
+      <div className="flex-1 text-sm text-left">
+        <p
+          className={`font-semibold ${danger ? "text-red-400" : "text-white"
+            }`}
+        >
+          {title}
+        </p>
+
+        {subtitle && (
+          <p className="text-[11px] text-white/40 mt-0">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {!danger && (
+        <ChevronRight
+          className="text-white/30"
+          size={18}
+        />
+      )}
+    </button>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 export function WalletProfileSection({ wallet }: { wallet: WalletInterface }) {
   const [activeTab, setActiveTab] = useState<"stats" | "history" | "settings">("stats");

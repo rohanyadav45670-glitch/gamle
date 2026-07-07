@@ -1,7 +1,7 @@
 "use client";
 
 import type { GamePhase } from "@/types/aviator";
-import { multColor } from "@/lib/aviatorEngine";
+import { multColor } from "@/lib/engines/aviatorEngine";
 import { cn } from "@/lib/utils";
 
 interface MultiplierDisplayProps {

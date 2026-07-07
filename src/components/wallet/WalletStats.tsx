@@ -31,38 +31,38 @@ export default function WalletStats({ wallet }: WalletStatsProps) {
       bg: "rgba(192,132,252,0.08)",
       border: "rgba(192,132,252,0.18)",
     },
-    {
-      label: "Total Bets",
-      value: wallet.totalBets.toLocaleString("en-IN"),
-      icon: <Target className="w-4 h-4" />,
-      color: "#7dd3fc",
-      bg: "rgba(125,211,252,0.08)",
-      border: "rgba(125,211,252,0.18)",
-    },
-    {
-      label: "Win Rate",
-      value: `${winRate}%`,
-      icon: <Trophy className="w-4 h-4" />,
-      color: "#fbbf24",
-      bg: "rgba(251,191,36,0.08)",
-      border: "rgba(251,191,36,0.18)",
-    },
-    {
-      label: "Total Wins",
-      value: wallet.totalWins.toLocaleString("en-IN"),
-      icon: <BarChart2 className="w-4 h-4" />,
-      color: "#4ade80",
-      bg: "rgba(34,197,94,0.06)",
-      border: "rgba(34,197,94,0.15)",
-    },
-    {
-      label: "Total Losses",
-      value: wallet.totalLosses.toLocaleString("en-IN"),
-      icon: <BarChart2 className="w-4 h-4" />,
-      color: "#f87171",
-      bg: "rgba(239,68,68,0.06)",
-      border: "rgba(239,68,68,0.15)",
-    },
+    // {
+    //   label: "Total Bets",
+    //   value: wallet.totalBets.toLocaleString("en-IN"),
+    //   icon: <Target className="w-4 h-4" />,
+    //   color: "#7dd3fc",
+    //   bg: "rgba(125,211,252,0.08)",
+    //   border: "rgba(125,211,252,0.18)",
+    // },
+    // {
+    //   label: "Win Rate",
+    //   value: `${winRate}%`,
+    //   icon: <Trophy className="w-4 h-4" />,
+    //   color: "#fbbf24",
+    //   bg: "rgba(251,191,36,0.08)",
+    //   border: "rgba(251,191,36,0.18)",
+    // },
+    // {
+    //   label: "Total Wins",
+    //   value: wallet.totalWins.toLocaleString("en-IN"),
+    //   icon: <BarChart2 className="w-4 h-4" />,
+    //   color: "#4ade80",
+    //   bg: "rgba(34,197,94,0.06)",
+    //   border: "rgba(34,197,94,0.15)",
+    // },
+    // {
+    //   label: "Total Losses",
+    //   value: wallet.totalLosses.toLocaleString("en-IN"),
+    //   icon: <BarChart2 className="w-4 h-4" />,
+    //   color: "#f87171",
+    //   bg: "rgba(239,68,68,0.06)",
+    //   border: "rgba(239,68,68,0.15)",
+    // },
   ];
 
   return (
@@ -83,10 +83,10 @@ export default function WalletStats({ wallet }: WalletStatsProps) {
           )}
           <div>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>
-              Net P&L
+              Locked balance
             </p>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>
-              Wins − Losses
+              Withdrawls | Deposits
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function WalletStats({ wallet }: WalletStatsProps) {
             color: pnl >= 0 ? "#4ade80" : "#f87171",
           }}
         >
-          {pnl >= 0 ? "+" : ""}₹{Math.abs(pnl).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          {wallet.lockedBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
         </p>
       </div>
 

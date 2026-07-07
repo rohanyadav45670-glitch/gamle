@@ -17,6 +17,7 @@ export interface Wallet {
   balance: number;
   totalDeposited: number;
   totalWithdrawn: number;
+  lockedBalance:number;
   totalBets: number;
   totalWins: number;
   totalLosses: number;

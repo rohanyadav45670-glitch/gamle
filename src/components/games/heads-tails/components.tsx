@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import type { CoinSide, FlipRecord } from "@/app/(Games)/heads-tails/page";
+import type { CoinSide, FlipRecord } from "@/hooks/games/useHeadsTails";
 
 const QUICK_AMOUNTS = [10, 50, 100, 500];
 
@@ -116,10 +116,10 @@ export function BetPanel({ balance, flipping, onFlip }: BetPanelProps) {
           <input
             type="number"
             value={amount}
-            min={1}
+            // min={1}
             max={balance}
             disabled={flipping}
-            onChange={(e) => setAmount(Math.max(1, Math.min(balance, Number(e.target.value))))}
+            onChange={(e) => setAmount(Math.min(balance, Number(e.target.value) ))}
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 14, fontWeight: 500, padding: "10px 0", fontFamily: "DM Sans, sans-serif" }}
           />
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>max ₹{Math.floor(balance)}</span>

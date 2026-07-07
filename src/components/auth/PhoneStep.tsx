@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { ChevronDown, Phone } from "lucide-react";
+import Link from "next/link";
 
 const COUNTRIES = [
   { code: "+91", flag: "🇮🇳", name: "India" },
-  { code: "+1",  flag: "🇺🇸", name: "USA"   },
-  { code: "+44", flag: "🇬🇧", name: "UK"    },
-  { code: "+971",flag: "🇦🇪", name: "UAE"   },
-  { code: "+65", flag: "🇸🇬", name: "SG"    },
+  { code: "+1", flag: "🇺🇸", name: "USA" },
+  { code: "+44", flag: "🇬🇧", name: "UK" },
+  { code: "+971", flag: "🇦🇪", name: "UAE" },
+  { code: "+65", flag: "🇸🇬", name: "SG" },
 ];
 
 interface PhoneStepProps {
@@ -19,8 +20,8 @@ interface PhoneStepProps {
 
 export default function PhoneStep({ onSubmit, isLoading, error }: PhoneStepProps) {
   const [country, setCountry] = useState(COUNTRIES[0]);
-  const [phone, setPhone]     = useState("");
-  const [showDD, setShowDD]   = useState(false);
+  const [phone, setPhone] = useState("");
+  const [showDD, setShowDD] = useState(false);
 
   function handlePhone(v: string) {
     setPhone(v.replace(/\D/g, "").slice(0, 10));
@@ -122,6 +123,23 @@ export default function PhoneStep({ onSubmit, isLoading, error }: PhoneStepProps
           "GET OTP →"
         )}
       </button>
+
+      <p
+        className="text-center text-sm"
+        style={{ color: "rgba(255,255,255,0.55)" }}
+      >
+        Already have an account?{" "}
+        <Link
+          href="/auth/login"
+          className="font-bold transition-opacity hover:opacity-80"
+          style={{
+            color: "#fbbf24",
+            fontFamily: "'Orbitron', sans-serif",
+          }}
+        >
+          Login
+        </Link>
+      </p>
 
       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center", lineHeight: 1.5 }}>
         By continuing, you agree to our{" "}

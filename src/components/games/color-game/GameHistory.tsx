@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { RoundResult } from "@/types/colorGame";
-import { numberToDisplayColors } from "@/lib/gameEngine";
+import { numberToDisplayColors } from "@/lib/engines/gameEngine";
 import { useState } from "react";
 
 interface GameHistoryProps {

@@ -24,6 +24,8 @@ export interface LivePlayer {
 }
 
 export interface GameState {
+  isLoading: boolean;
+  
   currentRoundId?: string;
   phase: GamePhase;
   multiplier: number;

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { GamePhase } from "@/types/aviator";
-import { multColor, timeForMult, GAME_CONFIG } from "@/lib/aviatorEngine";
+import { multColor, timeForMult, GAME_CONFIG } from "@/lib/engines/aviatorEngine";
 
 interface SkyCanvasProps {
   phase: GamePhase;

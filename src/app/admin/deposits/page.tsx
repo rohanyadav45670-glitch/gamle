@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { StatCard } from "@/components/admin/cards";
 import { useGetAllDepositsQuery, useApproveDepositMutation, useRejectDepositMutation } from "@/app/store/apis/depositsSlice";
+import { toast } from "sonner";
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -544,23 +545,42 @@ export default function DepositsPage() {
     }
 
     // ── Update
-    function updateStatus(ids: string[], status: DepositStatus) {
-        // setData(d => d.map(dep => ids.includes(dep.id) ? { ...dep, status, confirmedAt: new Date().toISOString() } : dep));
-        // setSelected(new Set());
-        // if (modal && ids.includes(modal.id)) setModal(null);
-        if (status == "approved") {
-            ids.forEach((id: string) => {
-                approveDeposit(id);
-            })
-        }
+    async function updateStatus(ids: string[], status: DepositStatus) {
+        await Promise.all(
+            ids.map(async (id) => {
+                try {
+                    const res =
+                        status === "approved"
+                            ? await approveDeposit(id).unwrap()
+                            : await rejectDeposit(id).unwrap();
 
-        if (status == "failed") {
-            ids.forEach(id => {
-                rejectDeposit(id);
-            })
-        }
+                    toast.success(
+                        `Deposit of ₹${res.data.amount} ${status}!`
+                    );
 
+                    setData((prev) =>
+                        prev.map((deposit) =>
+                            deposit.id === id
+                                ? {
+                                    ...deposit,
+                                    status,
+                                }
+                                : deposit
+                        )
+                    );
+                } catch (error: any) {
+                    toast.error(
+                        error?.data?.message ||
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        "Something went wrong!"
+                    );
+                }
+            })
+        );
     }
+
+
     const actionableSelected = paginated.filter(d => selected.has(d.id) && (d.status === "pending" || d.status === "reviewing")).map(d => d.id);
 
     return (

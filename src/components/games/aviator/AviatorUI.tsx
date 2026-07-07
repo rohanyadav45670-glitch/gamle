@@ -144,7 +144,7 @@ export function ToastStack({ toasts }: { toasts: ToastMsg[] }) {
 
   return (
     <div
-      className="absolute top-14 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap pointer-events-none"
+      className="absolute top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap pointer-events-none"
       style={{
         ...styles[latest.type],
         animation: "toast-in 0.3s cubic-bezier(0.34,1.56,0.64,1)",

@@ -3,59 +3,29 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-import { useGameEngine } from "@/hooks/useColor";
-import BalanceBar from "@/components/common/BalanceBar";
+import { useColorEngine } from "@/hooks/games/useColor";
 import GameTimer from "@/components/games/color-game/GameTimer";
 import ResultReveal from "@/components/games/color-game/ResultReveal";
 import BettingPanel from "@/components/games/color-game/BettingPanel";
 import GameHistory from "@/components/games/color-game/GameHistory";
 import MyBets from "@/components/games/color-game/MyBets";
 import GameHeader from "@/components/games/shared/Header";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/app/store/store";
-import { fetchWallet } from "@/app/store/features/walletSlice";
 
 type Tab = "game" | "history" | "mybets";
 
 export default function ColorGamePage() {
 
-  const dispatch = useDispatch<AppDispatch>();
-  const { data: wallet, loading, error } = useSelector((state: RootState) => state.wallet)
-
-  const { state, placeBet, cancelBet, addFunds, config } = useGameEngine();
+  const { state, placeBet, cancelBet, config } = useColorEngine();
   const [tab, setTab] = useState<Tab>("game");
 
   const isRevealing = state.phase === "result"
 
-
-  useEffect(() => {
-    if (wallet) return;
-    dispatch(fetchWallet());
-  }, [dispatch])
-
-  // useEffect(() => {
-  //   if (!wallet) return;
-  //   setStats(s => ({
-  //     ...s,
-  //     balance: wallet.balance
-  //   }))
-  // }, [wallet])
-
-  if (state.isLoading) {
-    return (
-      <div>
-        Loading ...
-      </div>
-    )
-  }
+  if (state.isLoading) return <PageLoader />
   return (
     <>
       <div className="min-h-screen bg-[#0b0d14] text-white flex flex-col">
         {/* ── Top Bar ─────────────────────────────────────────── */}
-        <GameHeader title="Win Go" desc="Colour Prediction" balance={wallet?.balance} />
-
-        {/* ── Balance Bar ─────────────────────────────────────── */}
-        {/* <BalanceBar balance={state.balance} onAddFunds={() => addFunds(500)} /> */}
+        <GameHeader title="Win Go" desc="Colour Prediction" />
 
         {/* ── Timer + Result Area ─────────────────────────────── */}
         <div className="relative overflow-hidden">
@@ -82,7 +52,7 @@ export default function ColorGamePage() {
                   betAmount={state.currentBet?.amount}
                   payout={
                     state.currentBet && state.lastResult
-                      ? state.currentBet.amount * 2
+                      ? state.currentBet.amount * (state.currentBet.multiplier || 0)
                       : undefined
                   }
                 />
@@ -158,4 +128,47 @@ export default function ColorGamePage() {
       </div>
     </>
   );
+}
+
+function PageLoader() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-[#0f111a]">
+      <div className="flex flex-col items-center gap-6">
+        {/* Animated Rings */}
+        <div className="relative h-24 w-24">
+          <div className="absolute inset-0 rounded-full border-4 border-yellow-500/20" />
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-yellow-400 animate-spin" />
+          <div className="absolute inset-3 rounded-full border-4 border-transparent border-b-orange-500 animate-spin [animation-direction:reverse] [animation-duration:1.2s]" />
+          <div className="absolute inset-7 rounded-full bg-yellow-400 shadow-[0_0_25px_rgba(251,191,36,0.6)]" />
+        </div>
+
+        {/* Title */}
+        <div className="text-center">
+          <h2
+            className="text-xl font-black tracking-widest text-yellow-400"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            COLOR PREDICTION
+          </h2>
+
+          <p className="mt-2 text-sm text-white/60">
+            Preparing your gaming experience...
+          </p>
+        </div>
+
+        {/* Animated Dots */}
+        <div className="flex gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-yellow-400 animate-bounce" />
+          <span
+            className="h-2.5 w-2.5 rounded-full bg-yellow-400 animate-bounce"
+            style={{ animationDelay: "0.15s" }}
+          />
+          <span
+            className="h-2.5 w-2.5 rounded-full bg-yellow-400 animate-bounce"
+            style={{ animationDelay: "0.3s" }}
+          />
+        </div>
+      </div>
+    </div>
+  )
 }

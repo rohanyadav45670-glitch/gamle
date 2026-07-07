@@ -1,17 +1,20 @@
 import type { ColorChoice, RoundResult, GameConfig } from "@/types/colorGame";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
+export const MULTIPLIERS = {
+  color: 2,
+  number: 3,
+  size: 1.5,
+}
 
 export const DEFAULT_CONFIG: GameConfig = {
   roundDuration: 60,
   lockoutSeconds: 5,
   startingBalance: 1000,
   multipliers: {
-    red: 2,
-    green: 2,
-    violet: 4.5,
-    big: 2,
-    small: 2,
+   color: 2,
+   number: 3,
+   size: 1.5,
   },
 };
 

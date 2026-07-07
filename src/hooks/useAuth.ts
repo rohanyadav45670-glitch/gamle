@@ -28,7 +28,7 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const route = useRouter();
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user.data);
+  const user = useSelector((state: RootState) => state.user.data as any);
 
   const [state, setState] = useState<AuthState>({
     step: "phone",
@@ -156,9 +156,13 @@ export function useAuth(): UseAuthReturn {
     }));
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await axios.post(`${BASE_URL}/auth/logout`, {}, { withCredentials: true });
+    localStorage.removeItem("user");
     dispatch(clearUser());
     dispatch(clearWallet());
+
+    route.push("/auth/login")
     setState({ step: "phone", phone: "", isNewUser: false, isLoading: false, error: null });
   }, []);
 

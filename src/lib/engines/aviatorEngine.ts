@@ -12,17 +12,27 @@ export const GAME_CONFIG: GameConfig = {
 // ── Crash point RNG ───────────────────────────────────────────────────────────
 // Weighted distribution matching real Aviator feel:
 // ~30% crash below 1.5x, ~25% between 1.5-2.5x, ~20% 2.5-5x, ~15% 5-20x, ~10% 20x+
-
 export function generateCrashPoint(): number {
-  const r = Math.random();
-  if (r < 0.30) return 1.00 + Math.random() * 0.5;          // 1.0–1.5x
-  if (r < 0.55) return 1.5  + Math.random() * 1.0;          // 1.5–2.5x
-  if (r < 0.75) return 2.5  + Math.random() * 2.5;          // 2.5–5x
-  if (r < 0.88) return 5    + Math.random() * 15;            // 5–20x
-  if (r < 0.95) return 20   + Math.random() * 30;            // 20–50x
-  return 50 + Math.random() * 150;                           // 50–200x (rare)
-}
+    const r = Math.random();
 
+    // 10% -> Instant/Low Crash (1.00x - 1.50x)
+    if (r < 0.10) {
+        return Number((1 + Math.random() * 0.5).toFixed(2));
+    }
+
+    // 60% -> Normal Crash (3.00x - 10.00x)
+    if (r < 0.70) {
+        return Number((3 + Math.random() * 7).toFixed(2));
+    }
+
+    // 29% -> High Crash (10.00x - 20.00x)
+    if (r < 0.99) {
+        return Number((10 + Math.random() * 10).toFixed(2));
+    }
+
+    // 1% -> Very High Crash (20.00x - 100.00x)
+    return Number((20 + Math.random() * 80).toFixed(2));
+}
 // ── Multiplier ↔ time conversion ──────────────────────────────────────────────
 // mult(t) = e^(t / TC)  →  t(mult) = TC * ln(mult)
 

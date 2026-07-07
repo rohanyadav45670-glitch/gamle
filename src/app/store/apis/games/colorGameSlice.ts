@@ -19,6 +19,10 @@ export const colorGameApi = createApi({
             query: (id) => `/my-result/${id}`
         }),
 
+        getMyActiveBet: builder.query({
+            query: () => "/active-bet"
+        }), 
+
         placeBet: builder.mutation({
             query: (options) => ({
                 url: "/place-bet",
@@ -29,4 +33,4 @@ export const colorGameApi = createApi({
     })
 })
 
-export const { useGetCurrentRoundQuery, useLazyGetMyResultQuery,useLazyGetCurrentRoundQuery, usePlaceBetMutation, useLazyGetResultQuery } = colorGameApi;
+export const { useGetCurrentRoundQuery, useLazyGetMyResultQuery,useLazyGetCurrentRoundQuery, usePlaceBetMutation, useLazyGetResultQuery, useGetMyActiveBetQuery } = colorGameApi;

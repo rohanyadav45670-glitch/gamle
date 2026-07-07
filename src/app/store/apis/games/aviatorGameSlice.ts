@@ -7,6 +7,7 @@ export interface PlaceBetBody {
 
 export interface CashoutBody {
     roundId: string;
+    cashOutAt: number;
 }
 
 export interface AviatorBet {
@@ -14,6 +15,9 @@ export interface AviatorBet {
     userId: string;
     roundId: string;
     betAmount: number;
+
+    willCrashAt:number;
+
     payout: number;
     status: "pending" | "won" | "lost";
     cashedOut: boolean;

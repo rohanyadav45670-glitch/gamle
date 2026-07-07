@@ -47,10 +47,16 @@ const walletSlice = createSlice({
         setWallet(state, action: PayloadAction<Wallet | null>) {
             state.data = action.payload;
         },
+        updateBalance(state, action: PayloadAction<number>) {
+            if (state.data) {
+                state.data.balance += action.payload;
+            }
+        },
         clearWallet(state) {
             state.data = null;
         }
     },
+    
     extraReducers: (builder) => {
         builder
             .addCase(fetchWallet.pending, (state) => {
@@ -69,6 +75,6 @@ const walletSlice = createSlice({
     }
 })
 
-export const {setWallet, clearWallet} = walletSlice.actions;
+export const {setWallet, updateBalance, clearWallet} = walletSlice.actions;
 const walletReducer = walletSlice.reducer;
 export default walletReducer;

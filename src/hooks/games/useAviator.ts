@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchWallet, updateBalance } from "@/app/store/features/walletSlice";
 import type { GameState, BetSlot } from "@/types/aviator";
 import {
   GAME_CONFIG,
@@ -9,11 +11,14 @@ import {
   generateLivePlayers,
   simulateCashouts,
   newRoundId,
-} from "@/lib/aviatorEngine";
+} from "@/lib/engines/aviatorEngine";
 
 import { socket } from "@/lib/socket";
 import { usePlaceBetMutation } from "@/app/store/apis/games/aviatorGameSlice";
 import { useCashoutMutation } from "@/app/store/apis/games/aviatorGameSlice";
+import { AppDispatch, RootState } from "@/app/store/store";
+import axios from "axios";
+import { BASE_URL } from "@/lib/APIROTES";
 // ── Initial state ─────────────────────────────────────────────────────────────
 
 function makeBet(id: 1 | 2, amount: number): BetSlot {
@@ -21,6 +26,8 @@ function makeBet(id: 1 | 2, amount: number): BetSlot {
 }
 
 const INITIAL: GameState = {
+  isLoading: true,
+
   phase: "waiting",
   multiplier: 1.0,
   crashAt: 2.0,
@@ -40,6 +47,21 @@ export function useAviator() {
   const [state, setState] = useState<GameState>(INITIAL);
   const stateRef = useRef<GameState>(INITIAL);
 
+  const dispatch = useDispatch<AppDispatch>();
+  const { data: walletData } = useSelector((state: RootState) => state.wallet);
+
+  useEffect(() => {
+    if (!walletData) {
+      dispatch(fetchWallet());
+    }
+    if (walletData && walletData.balance !== undefined) {
+      setState(prev => ({
+        ...prev,
+        balance: walletData.balance
+      }));
+    }
+  }, [walletData]);
+
   // Keep ref in sync so callbacks always see latest state
   const set = useCallback((updater: (s: GameState) => GameState) => {
     setState((prev) => {
@@ -52,7 +74,7 @@ export function useAviator() {
   const flyTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const waitTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
-  const roundIdRef = useRef<string>("");
+  const roundIdRef = useRef<string>(""); // it refers to bet id when bet is placed
 
   // Notification callback (set by consumer)
   const onToastRef = useRef<(msg: string, type: "win" | "lose" | "info") => void>(() => { });
@@ -68,64 +90,93 @@ export function useAviator() {
   const [placeBetApi] = usePlaceBetMutation();
   const [cashoutApi] = useCashoutMutation();
 
-  useEffect(() => {
-    socket.on("aviator:new-round", (round) => {
+  // Socket working logics
+  // useEffect(() => {
+  //   socket.on("aviator:new-round", (round) => {
 
-      roundIdRef.current = round._id;
+  //     roundIdRef.current = round._id;
 
-      set((prev) => ({
-        ...prev,
-        phase: "waiting",
-        multiplier: 1,
-        crashAt: 0, // hidden from client
-        waitLeft: GAME_CONFIG.waitDuration,
+  //     set((prev) => ({
+  //       ...prev,
+  //       phase: "waiting",
+  //       multiplier: 1,
+  //       crashAt: 0, // hidden from client
+  //       waitLeft: GAME_CONFIG.waitDuration,
 
-        bets: {
-          1: { ...prev.bets[1], placed: false, cashedOut: false, cashoutMultiplier: undefined },
-          2: { ...prev.bets[2], placed: false, cashedOut: false, cashoutMultiplier: undefined },
-        },
+  //       bets: {
+  //         1: { ...prev.bets[1], placed: false, cashedOut: false, cashoutMultiplier: undefined },
+  //         2: { ...prev.bets[2], placed: false, cashedOut: false, cashoutMultiplier: undefined },
+  //       },
 
-        livePlayers: generateLivePlayers(),
-      }));
+  //       livePlayers: generateLivePlayers(),
+  //     }));
 
-      waiting();
-    });
+  //     waiting();
+  //   });
 
-    socket.on(
-      "aviator:update",
-      ({ multiplier }) => {
-        set((prev) => ({
-          ...prev,
-          phase: "flying",
-          multiplier,
-        }));
-      }
-    );
+  //   socket.on(
+  //     "aviator:update",
+  //     ({ multiplier }) => {
+  //       set((prev) => ({
+  //         ...prev,
+  //         phase: "flying",
+  //         multiplier,
+  //       }));
+  //     }
+  //   );
 
-    socket.on(
-      "aviator:crash",
-      ({ multiplier }) => {
-        set((prev) => ({
-          ...prev,
-          phase: "crashed",
-          multiplier,
-          history: [
-            {
-              crashAt: multiplier,
-              timestamp: Date.now(),
-            },
-            ...prev.history,
-          ].slice(0, 50),
-        }));
-      }
-    );
+  //   socket.on(
+  //     "aviator:crash",
+  //     ({ multiplier }) => {
+  //       set((prev) => ({
+  //         ...prev,
+  //         phase: "crashed",
+  //         multiplier,
+  //         history: [
+  //           {
+  //             crashAt: multiplier,
+  //             timestamp: Date.now(),
+  //           },
+  //           ...prev.history,
+  //         ].slice(0, 50),
+  //       }));
+  //     }
+  //   );
 
-    return () => {
-      socket.off("aviator:new-round");
-      socket.off("aviator:multiplier");
-      socket.off("aviator:crash");
-    };
-  }, [set]);
+  //   return () => {
+  //     socket.off("aviator:new-round");
+  //     socket.off("aviator:multiplier");
+  //     socket.off("aviator:crash");
+  //   };
+  // }, [set]);
+  // const waiting = useCallback(async () => {
+
+  //   console.log("from start waiting")
+
+  //   if (waitTimerRef.current) {
+  //     clearInterval(waitTimerRef.current);
+  //   }
+  //   waitTimerRef.current = setInterval(() => {
+  //     const current = stateRef.current;
+  //     if (current.waitLeft <= 1) {
+  //       clearInterval(waitTimerRef.current!);
+
+  //       console.log("stopped");
+
+  //       set((prev) => ({
+  //         ...prev,
+  //         waitLeft: 0,
+  //       }));
+
+  //       return;
+  //     }
+
+  //     set((prev) => {
+  //       return { ...prev, waitLeft: prev.waitLeft - 1 };
+  //     });
+  //   }, 2000);
+  // }, [set]);
+
 
   const placeBet = useCallback(
     async (slot: 1 | 2) => {
@@ -133,12 +184,15 @@ export function useAviator() {
       const bet = s.bets[slot];
 
       try {
-        await placeBetApi({
+        const { data } = await placeBetApi({
           amount: bet.amount,
         }).unwrap();
 
+        roundIdRef.current = data?._id;
+        console.log("Placed bet:", data);
         set((prev) => ({
           ...prev,
+          crashAt: data?.willCrashAt,
           bets: {
             ...prev.bets,
             [slot]: {
@@ -148,6 +202,7 @@ export function useAviator() {
           },
         }));
 
+        dispatch(updateBalance(-bet.amount));
         onToastRef.current(
           "Bet placed",
           "win"
@@ -164,8 +219,9 @@ export function useAviator() {
   const cashOut = useCallback(
     async (slot: 1 | 2) => {
       try {
-        await cashoutApi({
+        const { data } = await cashoutApi({
           roundId: roundIdRef.current,
+          cashOutAt: stateRef.current.multiplier,
         }).unwrap();
 
         set((prev) => ({
@@ -178,6 +234,13 @@ export function useAviator() {
             },
           },
         }));
+
+        dispatch(updateBalance(data?.payout));
+        onToastRef.current(
+          `Cashed out ${data?.cashoutMultiplier?.toFixed(2)}x → +₹${data?.payout.toFixed(2)}`,
+          "win"
+        );
+        
       } catch {
         onToastRef.current(
           "Cashout failed",
@@ -188,38 +251,10 @@ export function useAviator() {
     [cashoutApi, set]
   );
 
-  const waiting = useCallback(async () => {
-
-    console.log("from start waiting")
-
-    if (waitTimerRef.current) {
-      clearInterval(waitTimerRef.current);
-    }
-    waitTimerRef.current = setInterval(() => {
-      const current = stateRef.current;
-      if (current.waitLeft <= 1) {
-        clearInterval(waitTimerRef.current!);
-
-        console.log("stopped");
-
-        set((prev) => ({
-          ...prev,
-          waitLeft: 0,
-        }));
-
-        return;
-      }
-
-      set((prev) => {
-        return { ...prev, waitLeft: prev.waitLeft - 1 };
-      });
-    }, 2000);
-  }, [set]);
 
 
 
 
-  
 
   // ── Cashout ────────────────────────────────────────────────────────────────
 
@@ -245,9 +280,7 @@ export function useAviator() {
 
   //   onToastRef.current(`Cashed out ${mult.toFixed(2)}x → +₹${payout.toFixed(2)}`, "win");
   // }, [set]);
-
   // ── Place / cancel bet ─────────────────────────────────────────────────────
-
   // const placeBet = useCallback((slot: 1 | 2) => {
   //   const s = stateRef.current;
   //   if (s.phase !== "waiting") return;
@@ -320,32 +353,49 @@ export function useAviator() {
     console.log("Starting fly timer with crashAt =", s.crashAt);
 
     if (!flyTimerRef.current) clearInterval(flyTimerRef.current!)
+
     flyTimerRef.current = setInterval(() => {
-      const elapsed = (Date.now() - startTimeRef.current) / 100;
-      // const mult = +multAtTime(elapsed, GAME_CONFIG.timeConstant).toFixed(2);
-      mult += 0.01;
+
+      const elapsed =
+        (Date.now() - startTimeRef.current) / 1000;
+
+      const mult = Number(
+        Math.exp(elapsed * 0.16).toFixed(2)
+      );
+
       const current = stateRef.current;
 
-      // Auto-cashouts
-      ([1, 2] as const).forEach((slot) => {
+      ([1, 2] as const).forEach(slot => {
+
         const bet = current.bets[slot];
-        if (bet.placed && !bet.cashedOut && bet.autoCash >= 1.1 && mult >= bet.autoCash) {
+
+        if (
+          bet.placed &&
+          !bet.cashedOut &&
+          bet.autoCash >= 1.1 &&
+          mult >= bet.autoCash
+        ) {
           cashOut(slot);
         }
+
       });
 
-      // Check crash
       if (mult >= current.crashAt) {
+
         clearInterval(flyTimerRef.current!);
         triggerCrash(elapsed);
         return;
+
       }
 
-      // Simulate live player cashouts
-      set((prev) => ({
+      set(prev => ({
         ...prev,
         multiplier: mult,
-        livePlayers: simulateCashouts(prev.livePlayers, mult, prev.crashAt),
+        livePlayers: simulateCashouts(
+          prev.livePlayers,
+          mult,
+          prev.crashAt
+        )
       }));
 
     }, GAME_CONFIG.tickMs);
@@ -364,6 +414,7 @@ export function useAviator() {
       if (bet.placed && !bet.cashedOut) {
         lossCount++;
         lossAmount += bet.amount;
+        axios.post(`${BASE_URL}/aviator/crash`, {betId:roundIdRef.current}, {withCredentials:true});
       }
     });
 
@@ -434,22 +485,22 @@ export function useAviator() {
 
   // ── Lifecycle: crashed → wait ──────────────────────────────────────────────
 
-  // useEffect(() => {
-  //   if (state.phase === "crashed") {
-  //     const t = setTimeout(() => startWaiting(), 5000);
-  //     return () => clearTimeout(t);
-  //   }
-  // }, [state.phase, startWaiting]);
+  useEffect(() => {
+    if (state.phase === "crashed") {
+      const t = setTimeout(() => startWaiting(), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [state.phase, startWaiting]);
 
-  // // ── Bootstrap ──────────────────────────────────────────────────────────────
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
 
-  // useEffect(() => {
-  //   startWaiting();
-  //   return () => {
-  //     clearInterval(flyTimerRef.current!);
-  //     clearInterval(waitTimerRef.current!);
-  //   };
-  // }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    startWaiting();
+    return () => {
+      clearInterval(flyTimerRef.current!);
+      clearInterval(waitTimerRef.current!);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   return {

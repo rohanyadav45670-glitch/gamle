@@ -35,7 +35,7 @@ export const depositsApi = createApi({
     }),
 
     endpoints: (builder) => ({
-        getMyDeposits: builder.query<Deposit[], void>({
+        getMyDeposits: builder.query({
             query: () => "/my-deposits",
         }),
 

@@ -1,261 +1,264 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, Zap, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ArrowUpRight,
+  Copy,
+  Landmark,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useGetMyWithdrawlsQuery } from "@/app/store/apis/withdrawlsSlice";
 
-type WithdrawMethod = "bank" | "upi";
+type WithdrawStatus =
+  | "pending"
+  | "processing"
+  | "approved"
+  | "completed"
+  | "rejected";
 
-const QUICK_AMOUNTS = [200, 500, 1000, 2000];
+type WithdrawFilter = WithdrawStatus | "all";
 
-interface WithdrawPanelProps {
-  balance: number;
-  onWithdraw?: (amount: number, method: WithdrawMethod, detail: any) => Promise<void>;
-}
+const STATUS_CONFIG = {
+  pending: {
+    text: "#fbbf24",
+    bg: "rgba(251,191,36,.12)",
+    border: "rgba(251,191,36,.25)",
+    label: "Pending",
+  },
+  processing: {
+    text: "#60a5fa",
+    bg: "rgba(96,165,250,.12)",
+    border: "rgba(96,165,250,.25)",
+    label: "Processing",
+  },
+  approved: {
+    text: "#22c55e",
+    bg: "rgba(34,197,94,.12)",
+    border: "rgba(34,197,94,.25)",
+    label: "Approved",
+  },
+  completed: {
+    text: "#22c55e",
+    bg: "rgba(34,197,94,.12)",
+    border: "rgba(34,197,94,.25)",
+    label: "Completed",
+  },
+  rejected: {
+    text: "#ef4444",
+    bg: "rgba(239,68,68,.12)",
+    border: "rgba(239,68,68,.25)",
+    label: "Rejected",
+  },
+} as const;
 
-export default function WithdrawPanel({ balance, onWithdraw }: WithdrawPanelProps) {
-  const [amount, setAmount]     = useState(500);
-  const [method, setMethod]     = useState<WithdrawMethod>("upi");
-  const [detail, setDetail]     = useState<any>("");  // UPI ID or account number
-  const [ifsc, setIfsc]         = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [success, setSuccess]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
+const FILTERS: WithdrawFilter[] = [
+  "all",
+  "pending",
+  "processing",
+  "approved",
+  "completed",
+  "rejected",
+];
 
-  const insufficient = amount > balance;
-  const minWithdraw  = 200;
-  const canSubmit    = amount >= minWithdraw && !insufficient;
+export default function WithdrawHistory() {
+  const [filter, setFilter] = useState<WithdrawFilter>("all");
 
-  async function handleSubmit() {
-    if (!canSubmit) return;
-    setLoading(true);
-    setError(null);
-    try {
-      if (onWithdraw) await onWithdraw(amount, method, detail);
-      else await new Promise((r) => setTimeout(r, 1600));
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3500);
-    } catch (e: any) {
-      setError(e.message || "Withdrawal failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    data: withdrawHistory,
+    isLoading: withdrawHistoryLoading,
+  } = useGetMyWithdrawlsQuery({});
 
-  if (success) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 gap-4">
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(192,132,252,0.15)", border: "2px solid rgba(192,132,252,0.4)" }}
-        >
-          <CheckCircle2 className="w-8 h-8" style={{ color: "#c084fc" }} />
-        </div>
-        <div className="text-center">
-          <p className="font-black text-lg" style={{ color: "#c084fc", fontFamily: "'Orbitron', sans-serif" }}>
-            Withdrawal Requested!
-          </p>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
-            ₹{amount.toLocaleString("en-IN")} will arrive in 1–3 hours
-          </p>
-        </div>
-      </div>
+  const withdraws = useMemo(() => {
+    if (!withdrawHistory?.data) return [];
+
+    if (filter === "all") return withdrawHistory.data;
+
+    return withdrawHistory.data.filter(
+      (item: any) => item.status === filter
     );
-  }
+  }, [withdrawHistory, filter]);
 
   return (
-    <div className="px-4 space-y-4 pb-4">
+    <div
+      className="rounded-2xl overflow-hidden mx-4"
+      style={{
+        border: "1px solid rgba(255,255,255,.07)",
+        background: "#11151d",
+      }}
+    >
+      {/* Header */}
 
-      {/* Available balance */}
-      <div
-        className="flex items-center justify-between rounded-2xl px-4 py-3"
-        style={{ background: "rgba(192,132,252,0.07)", border: "1px solid rgba(192,132,252,0.18)" }}
-      >
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>Available Balance</p>
-        <p style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 18, fontWeight: 900, color: "#c084fc" }}>
-          ₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-        </p>
+      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+        <h3 className="font-bold text-white">
+          Withdrawal History
+        </h3>
+
+        <span className="text-xs text-gray-400">
+          {withdraws.length} Records
+        </span>
       </div>
 
-      {/* Amount */}
-      <div>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>
-          Withdraw Amount
-        </p>
-        <div className="grid grid-cols-4 gap-2 mb-3">
-          {QUICK_AMOUNTS.map((q) => (
-            <button
-              key={q}
-              onClick={() => setAmount(q)}
-              className="py-2 rounded-xl text-xs font-bold transition-all"
-              style={{
-                background: amount === q ? "rgba(192,132,252,0.15)" : "rgba(255,255,255,0.05)",
-                border: `1px solid ${amount === q ? "rgba(192,132,252,0.45)" : "rgba(255,255,255,0.1)"}`,
-                color: amount === q ? "#c084fc" : "rgba(255,255,255,0.5)",
-              }}
-            >
-              ₹{q}
-            </button>
-          ))}
-        </div>
-        <div
-          className="flex items-center gap-2 rounded-xl px-3"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            border: `1px solid ${insufficient ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}`,
-          }}
-        >
-          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 14 }}>₹</span>
-          <input
-            type="number"
-            value={amount}
-            min={minWithdraw}
-            max={balance}
-            onChange={(e) => setAmount(Number(e.target.value) || 0)}
-            className="flex-1 bg-transparent outline-none py-3 text-sm font-bold"
-            style={{ color: "#fff", fontFamily: "'Orbitron', sans-serif" }}
-          />
+      {/* Filters */}
+
+      <div className="flex gap-2 overflow-x-auto px-4 py-3 border-b border-white/5 scrollbar-hide">
+        {FILTERS.map((item) => (
           <button
-            onClick={() => setAmount(Math.floor(balance))}
-            className="text-xs font-bold px-2 py-1 rounded-lg transition-all"
-            style={{ background: "rgba(192,132,252,0.12)", color: "#c084fc", border: "1px solid rgba(192,132,252,0.25)" }}
+            key={item}
+            onClick={() => setFilter(item)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition whitespace-nowrap ${
+              filter === item
+                ? "bg-cyan-500 text-white"
+                : "bg-white/5 text-gray-400 hover:bg-white/10"
+            }`}
           >
-            MAX
+            {item.charAt(0).toUpperCase() + item.slice(1)}
           </button>
-        </div>
-        {insufficient && (
-          <p className="text-xs font-semibold mt-1.5 flex items-center gap-1" style={{ color: "#f87171" }}>
-            <AlertCircle className="w-3 h-3" /> Insufficient balance
-          </p>
-        )}
-        {amount < minWithdraw && amount > 0 && (
-          <p className="text-xs font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Minimum withdrawal: ₹{minWithdraw}
-          </p>
-        )}
+        ))}
       </div>
 
-      {/* Method */}
-      <div>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>
-          Withdrawal Method
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { id: "upi"  as const, label: "UPI",          icon: <Zap className="w-4 h-4" />,       tag: "1-3 hrs" },
-            { id: "bank" as const, label: "Bank Transfer", icon: <Building2 className="w-4 h-4" />, tag: "1-2 days" },
-          ]).map((m) => (
-            <button
-              key={m.id}
-              onClick={() => { setMethod(m.id); setDetail(""); }}
-              className="flex items-center gap-2.5 p-3 rounded-xl transition-all"
+      {/* Loading */}
+
+      {withdrawHistoryLoading ? (
+        <div className="py-12 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+        </div>
+      ) : withdraws.length === 0 ? (
+        <div className="py-14 text-center">
+          <Landmark className="w-12 h-12 mx-auto text-white/20" />
+
+          <p className="mt-4 text-white font-semibold">
+            No Withdrawals Found
+          </p>
+
+          <p className="text-xs text-white/40 mt-1">
+            Your withdrawal history will appear here.
+          </p>
+        </div>
+      ) : (
+        withdraws.map((withdraw: any, index: number) => {
+          const status =
+            STATUS_CONFIG[
+              withdraw.status as keyof typeof STATUS_CONFIG
+            ];
+
+          return (
+            <div
+              key={withdraw._id}
+              className="flex items-center gap-3 px-4 py-4 hover:bg-white/[0.03] transition"
               style={{
-                background: method === m.id ? "rgba(192,132,252,0.1)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${method === m.id ? "rgba(192,132,252,0.4)" : "rgba(255,255,255,0.08)"}`,
+                borderBottom:
+                  index !== withdraws.length - 1
+                    ? "1px solid rgba(255,255,255,.05)"
+                    : "none",
               }}
             >
-              <div style={{ color: method === m.id ? "#c084fc" : "rgba(255,255,255,0.4)" }}>{m.icon}</div>
-              <div className="flex-1 text-left">
-                <p style={{ fontSize: 13, fontWeight: 600, color: method === m.id ? "#c084fc" : "rgba(255,255,255,0.6)" }}>
-                  {m.label}
-                </p>
-                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>{m.tag}</p>
+              {/* Icon */}
+
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{
+                  color: status.text,
+                  background: status.bg,
+                  border: `1px solid ${status.border}`,
+                }}
+              >
+                <ArrowUpRight className="w-5 h-5" />
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Detail fields */}
-      {method === "upi" && (
-        <div>
-          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
-            UPI ID
-          </p>
-          <div
-            className="flex items-center gap-2 rounded-xl px-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
-          >
-            <Zap className="w-4 h-4" style={{ color: "rgba(255,255,255,0.3)" }} />
-            <input
-              type="text"
-              value={detail.upiId}
-              onChange={(e) => setDetail(({upiId:e.target.value}))}
-              placeholder="yourname@upi"
-              className="flex-1 bg-transparent outline-none py-3 text-sm"
-              style={{ color: "#fff" }}
-            />
-          </div>
-        </div>
+              {/* Content */}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-white">
+                    ₹{withdraw.amount.toLocaleString("en-IN")}
+                  </p>
+
+                  <span
+                    className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    style={{
+                      color: status.text,
+                      background: status.bg,
+                      border: `1px solid ${status.border}`,
+                    }}
+                  >
+                    {status.label}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 mt-1 text-xs text-white/45 flex-wrap">
+                  <span>{withdraw.method.toUpperCase()}</span>
+
+                  <span>•</span>
+
+                  <span>
+                    {new Date(
+                      withdraw.createdAt
+                    ).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {withdraw.transactionId && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[11px] text-white/35 truncate">
+                      TXN: {withdraw.transactionId}
+                    </span>
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          withdraw.transactionId
+                        );
+
+                        toast.success(
+                          "Transaction ID copied"
+                        );
+                      }}
+                    >
+                      <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                    </button>
+                  </div>
+                )}
+
+                {withdraw.utr && (
+                  <div className="mt-1 text-[11px] text-white/35">
+                    UTR : {withdraw.utr}
+                  </div>
+                )}
+
+                {withdraw.remark && (
+                  <div className="mt-2 text-xs text-red-300">
+                    {withdraw.remark}
+                  </div>
+                )}
+              </div>
+
+              {/* Amount */}
+
+              <div className="text-right">
+                <p
+                  className="font-black"
+                  style={{
+                    color:
+                      withdraw.status === "completed"
+                        ? "#ef4444"
+                        : status.text,
+                    fontFamily: "Orbitron",
+                  }}
+                >
+                  -₹{withdraw.amount.toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+          );
+        })
       )}
-
-      {method === "bank" && (
-        <div className="space-y-2.5">
-          <div>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
-              Account Number
-            </p>
-            <input
-              type="text"
-              value={detail}
-              onChange={(e) => setDetail(e.target.value.replace(/\D/g, "").slice(0, 18))}
-              placeholder="Enter account number"
-              className="w-full rounded-xl px-3 py-3 text-sm outline-none"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontFamily: "'Orbitron', sans-serif", letterSpacing: "1px" }}
-            />
-          </div>
-          <div>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 8 }}>
-              IFSC Code
-            </p>
-            <input
-              type="text"
-              value={ifsc}
-              onChange={(e) => setIfsc(e.target.value.toUpperCase().slice(0, 11))}
-              placeholder="e.g. SBIN0001234"
-              className="w-full rounded-xl px-3 py-3 text-sm outline-none"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", letterSpacing: "2px" }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div
-          className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-          style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}
-        >
-          <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "#f87171" }} />
-          <p style={{ fontSize: 12, color: "#f87171", fontWeight: 600 }}>{error}</p>
-        </div>
-      )}
-
-      {/* Submit */}
-      <button
-        onClick={handleSubmit}
-        disabled={loading || !canSubmit}
-        className="w-full py-3.5 rounded-2xl font-black text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{
-          fontFamily: "'Orbitron', sans-serif",
-          letterSpacing: "0.5px",
-          background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-          color: "#fff",
-          boxShadow: "0 4px 20px rgba(168,85,247,0.3)",
-        }}
-      >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Processing...
-          </span>
-        ) : (
-          `WITHDRAW ₹${amount.toLocaleString("en-IN")} →`
-        )}
-      </button>
-
-      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>
-        Withdrawals are processed within 1–24 hours after KYC verification
-      </p>
     </div>
   );
 }

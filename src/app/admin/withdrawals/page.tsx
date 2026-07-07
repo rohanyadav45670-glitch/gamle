@@ -26,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { useApproveWithdrawMutation, useGetAllWithdrawlsQuery, useRejectWithdrawMutation } from "../../store/apis/withdrawlsSlice";
+import { toast } from "sonner";
 
 // ─────────────────────────────────────────────
 // Types
@@ -54,29 +55,13 @@ type SortKey = keyof Withdrawal;
 type SortDir = "asc" | "desc";
 
 // ─────────────────────────────────────────────
-// Mock Data
-// ─────────────────────────────────────────────
-const MOCK_WITHDRAWALS: Withdrawal[] = [
-  { id: "WD-10291", userId: "U-4821", userName: "Priya Sharma", email: "priya.sharma@mail.com", avatar: "PS", amount: 12400, currency: "USD", method: "bank_transfer", accountDetails: "HDFC ****4821", status: "pending", requestedAt: "2026-05-31T08:14:00Z", country: "IN", flagged: false },
-  { id: "WD-10290", userId: "U-3310", userName: "Marcus Holt", email: "m.holt@inbox.io", avatar: "MH", amount: 88500, currency: "USD", method: "wire", accountDetails: "Chase ****9910", status: "pending", requestedAt: "2026-05-31T07:02:00Z", country: "US", flagged: true, note: "Large amount — verify identity" },
-  { id: "WD-10289", userId: "U-7719", userName: "Chloe Dupont", email: "chloe.d@webmail.fr", avatar: "CD", amount: 3200, currency: "EUR", method: "paypal", accountDetails: "chloe.d@webmail.fr", status: "approved", requestedAt: "2026-05-30T14:55:00Z", processedAt: "2026-05-30T16:00:00Z", country: "FR", flagged: false },
-  { id: "WD-10288", userId: "U-2204", userName: "Arjun Patel", email: "arjun.p@techco.in", avatar: "AP", amount: 5500, currency: "USD", method: "crypto", accountDetails: "0xA3c...f91B", status: "processing", requestedAt: "2026-05-30T11:30:00Z", country: "IN", flagged: false },
-  { id: "WD-10287", userId: "U-8891", userName: "Sofia Reyes", email: "sofia.r@latam.mx", avatar: "SR", amount: 1800, currency: "USD", method: "bank_transfer", accountDetails: "BBVA ****0023", status: "rejected", requestedAt: "2026-05-29T09:44:00Z", processedAt: "2026-05-29T12:00:00Z", note: "KYC not completed", country: "MX", flagged: false },
-  { id: "WD-10286", userId: "U-5502", userName: "Liam O'Brien", email: "liam.ob@domain.ie", avatar: "LO", amount: 22000, currency: "GBP", method: "bank_transfer", accountDetails: "AIB ****3341", status: "approved", requestedAt: "2026-05-29T08:10:00Z", processedAt: "2026-05-29T10:30:00Z", country: "IE", flagged: false },
-  { id: "WD-10285", userId: "U-1193", userName: "Yuki Tanaka", email: "yuki.t@jp-mail.jp", avatar: "YT", amount: 9900, currency: "USD", method: "crypto", accountDetails: "0xB7d...22aC", status: "pending", requestedAt: "2026-05-28T20:15:00Z", country: "JP", flagged: true, note: "Multiple requests in 24h" },
-  { id: "WD-10284", userId: "U-6608", userName: "Nina Kozlov", email: "nina.k@rupost.ru", avatar: "NK", amount: 4100, currency: "USD", method: "wire", accountDetails: "Sberbank ****7712", status: "rejected", requestedAt: "2026-05-28T14:22:00Z", processedAt: "2026-05-28T16:00:00Z", note: "Sanctioned region", country: "RU", flagged: true },
-  { id: "WD-10283", userId: "U-9901", userName: "Carlos Lima", email: "c.lima@brazinet.br", avatar: "CL", amount: 7750, currency: "USD", method: "paypal", accountDetails: "c.lima@brazinet.br", status: "approved", requestedAt: "2026-05-27T10:05:00Z", processedAt: "2026-05-27T11:45:00Z", country: "BR", flagged: false },
-  { id: "WD-10282", userId: "U-3314", userName: "Amara Osei", email: "amara.o@africamail.gh", avatar: "AO", amount: 2600, currency: "USD", method: "bank_transfer", accountDetails: "GCB ****5566", status: "processing", requestedAt: "2026-05-27T07:33:00Z", country: "GH", flagged: false },
-];
-
-// ─────────────────────────────────────────────
 // Utility helpers
 // ─────────────────────────────────────────────
 const statusConfig: Record<Status, { label: string; color: string; icon: React.FC<{ className?: string }> }> = {
-  pending:    { label: "Pending",    color: "text-amber-400 bg-amber-400/10 border-amber-400/20",    icon: Clock },
-  approved:   { label: "Approved",   color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", icon: CheckCircle2 },
-  rejected:   { label: "Rejected",   color: "text-red-400 bg-red-400/10 border-red-400/20",          icon: XCircle },
-  processing: { label: "Processing", color: "text-blue-400 bg-blue-400/10 border-blue-400/20",       icon: RefreshCw },
+  pending: { label: "Pending", color: "text-amber-400 bg-amber-400/10 border-amber-400/20", icon: Clock },
+  approved: { label: "Approved", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", icon: CheckCircle2 },
+  rejected: { label: "Rejected", color: "text-red-400 bg-red-400/10 border-red-400/20", icon: XCircle },
+  processing: { label: "Processing", color: "text-blue-400 bg-blue-400/10 border-blue-400/20", icon: RefreshCw },
 };
 
 const methodLabels: Record<Withdrawal["method"], string> = {
@@ -117,7 +102,7 @@ function StatCard({ label, value, sub, icon: Icon, trend, accent }: StatCardProp
       <div>
         <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
         <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-          {trend === "up"   && <ArrowUpRight className="w-3 h-3 text-emerald-400" />}
+          {trend === "up" && <ArrowUpRight className="w-3 h-3 text-emerald-400" />}
           {trend === "down" && <ArrowDownRight className="w-3 h-3 text-red-400" />}
           {sub}
         </p>
@@ -229,7 +214,7 @@ function DetailModal({ w, onClose, onApprove, onReject }: { w: Withdrawal; onClo
         {/* Actions */}
         {w.status === "pending" && (
           <div className="flex gap-3 px-6 pb-5">
-            <button onClick={onReject}  className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-colors">
+            <button onClick={onReject} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-colors">
               <XCircle className="w-4 h-4" /> Reject
             </button>
             <button onClick={onApprove} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">
@@ -309,14 +294,14 @@ function RowActions({ w, onView, onApprove, onReject }: { w: Withdrawal; onView:
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-9 z-20 w-44 rounded-xl border border-white/[0.08] bg-[#151820] shadow-xl overflow-hidden">
-            <button onClick={() => { onView(); setOpen(false); }}    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors">
+            <button onClick={() => { onView(); setOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors">
               <Eye className="w-3.5 h-3.5 text-slate-500" /> View details
             </button>
             {w.status === "pending" && <>
               <button onClick={() => { onApprove(); setOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Approve
               </button>
-              <button onClick={() => { onReject(); setOpen(false); }}  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+              <button onClick={() => { onReject(); setOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
                 <Ban className="w-3.5 h-3.5" /> Reject
               </button>
             </>}
@@ -336,10 +321,10 @@ function BulkBar({ count, onApprove, onReject, onClear }: { count: number; onApp
       <button onClick={onApprove} className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">
         <CheckCircle2 className="w-3.5 h-3.5" /> Approve all
       </button>
-      <button onClick={onReject}  className="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
+      <button onClick={onReject} className="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
         <XCircle className="w-3.5 h-3.5" /> Reject all
       </button>
-      <button onClick={onClear}   className="ml-auto text-xs text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+      <button onClick={onClear} className="ml-auto text-xs text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
     </div>
   );
 }
@@ -350,8 +335,9 @@ function BulkBar({ count, onApprove, onReject, onClear }: { count: number; onApp
 export default function WithdrawalsPage() {
   const [approveWithdrawl] = useApproveWithdrawMutation();
   const [rejectWithdrawl] = useRejectWithdrawMutation();
-  const {data: apiData, isLoading} = useGetAllWithdrawlsQuery({});
-  const [data, setData] = useState<Withdrawal[]>(MOCK_WITHDRAWALS);
+  const { data: apiData, isLoading } = useGetAllWithdrawlsQuery({});
+
+  const [data, setData] = useState<Withdrawal[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
   const [methodFilter, setMethodFilter] = useState<Withdrawal["method"] | "all">("all");
@@ -363,7 +349,7 @@ export default function WithdrawalsPage() {
   const PER_PAGE = 7;
 
   useEffect(() => {
-    if(apiData && !isLoading) {
+    if (apiData && !isLoading) {
       const formattedData = apiData.data.map((w: any) => ({
         id: w._id,
         userId: w.userId._id,
@@ -427,18 +413,40 @@ export default function WithdrawalsPage() {
     else setSelected(new Set(paginated.map(w => w.id)));
   }
 
-  function updateStatus(ids: string[], status: Status) {
-    // setData(d => d.map(w => ids.includes(w.id) ? { ...w, status, processedAt: new Date().toISOString() } : w));
-    // setSelected(new Set());
-    // if (modal && ids.includes(modal.id)) setModal(null);
+ async function updateStatus(ids: string[], status: Status) {
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const res =
+          status === "approved"
+            ? await approveWithdrawl(id).unwrap()
+            : await rejectWithdrawl(id).unwrap();
 
-    if(status === "approved") {
-      ids.forEach(id => approveWithdrawl(id));
-    }
-      else if(status === "rejected") {
-        ids.forEach(id => rejectWithdrawl(id));
+        toast.success(
+          `Withdrawal of ₹${res.data.amount} ${status}!`
+        );
+
+        setData(prev =>
+          prev.map(w =>
+            w.id === id
+              ? {
+                  ...w,
+                  status,
+                }
+              : w
+          )
+        );
+      } catch (error: any) {
+        toast.error(
+          error?.data?.message ||
+            error?.response?.data?.message ||
+            error?.message ||
+            "Something went wrong!"
+        );
       }
-  }
+    })
+  );
+}
 
   const pendingSelected = paginated.filter(w => selected.has(w.id) && w.status === "pending").map(w => w.id);
 
@@ -454,39 +462,19 @@ export default function WithdrawalsPage() {
   return (
     <div className="min-h-screen bg-[#0a0c12] text-white font-sans">
       {/* Ambient */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      {/* <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-violet-900/20 blur-[120px]" />
         <div className="absolute -bottom-40 -right-20 w-[500px] h-[500px] rounded-full bg-indigo-900/20 blur-[120px]" />
-      </div>
+      </div> */}
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-7">
 
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingDown className="w-5 h-5 text-violet-400" />
-              <span className="text-xs font-bold tracking-widest uppercase text-violet-400">Finance Admin</span>
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-white">Withdrawals</h1>
-            <p className="text-slate-500 text-sm mt-1">Review, approve, and manage all withdrawal requests.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="h-9 px-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-slate-400 hover:text-white hover:border-white/20 flex items-center gap-2 transition-all">
-              <Calendar className="w-3.5 h-3.5" /> Today
-            </button>
-            <button className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-semibold text-white flex items-center gap-2 transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
-            </button>
-          </div>
-        </div>
-
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Volume"    value={fmt(stats.total, "USD")}       sub="All time"                        icon={DollarSign}   trend="up"      accent="bg-violet-500/10 text-violet-400" />
-          <StatCard label="Pending"         value={String(stats.pending)}          sub={`${stats.pending} awaiting action`} icon={Clock}        trend="neutral" accent="bg-amber-500/10 text-amber-400" />
-          <StatCard label="Approved"        value={String(stats.approved)}         sub="Successfully processed"         icon={CheckCircle2} trend="up"      accent="bg-emerald-500/10 text-emerald-400" />
-          <StatCard label="Flagged"         value={String(stats.flagged)}          sub="Needs manual review"            icon={AlertTriangle} trend="down"   accent="bg-red-500/10 text-red-400" />
+          <StatCard label="Total Volume" value={fmt(stats.total, "USD")} sub="All time" icon={DollarSign} trend="up" accent="bg-violet-500/10 text-violet-400" />
+          <StatCard label="Pending" value={String(stats.pending)} sub={`${stats.pending} awaiting action`} icon={Clock} trend="neutral" accent="bg-amber-500/10 text-amber-400" />
+          <StatCard label="Approved" value={String(stats.approved)} sub="Successfully processed" icon={CheckCircle2} trend="up" accent="bg-emerald-500/10 text-emerald-400" />
+          <StatCard label="Flagged" value={String(stats.flagged)} sub="Needs manual review" icon={AlertTriangle} trend="down" accent="bg-red-500/10 text-red-400" />
         </div>
 
         {/* Table Card */}

@@ -39,7 +39,7 @@ export interface GameState {
   timeLeft: number;         // seconds
   totalSeconds: number;
   balance: number;
-  currentBet: { choice: { color: ColorChoice | null, size: "big" | "small" | null, number: number | null }, amount: number } | null;
+  currentBet: { choice: { color: ColorChoice | null, size: "big" | "small" | null, number: number | null }, amount: number, multiplier?: number } | null;
   lastResult: RoundResult | null;
   history: RoundResult[];
   betHistory: Bet[];
@@ -50,5 +50,5 @@ export interface GameConfig {
   roundDuration: number;    // seconds
   lockoutSeconds: number;   // seconds before end when bets lock
   startingBalance: number;
-  multipliers: Record<ColorChoice | "big" | "small", number>;
+  multipliers: any;
 }

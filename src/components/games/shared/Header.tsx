@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-const GameHeader = ({ title, desc, balance }: { title: string, desc?: string, balance: number | undefined }) => {
+const GameHeader = ({ title, desc, balance }: { title: string, desc?: string, balance?: number | undefined }) => {
     const route = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const { data: wallet, loading, error } = useSelector((state: RootState) => state.wallet)
@@ -57,7 +57,11 @@ const GameHeader = ({ title, desc, balance }: { title: string, desc?: string, ba
                         Bal
                     </span>
                     <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "#fbbf24", fontWeight: 700 }}>
-                        {balance ? (`₹${Math.round(balance).toLocaleString("en-IN")}`) : (
+                        {wallet?.balance != null ? (
+                            `₹${Math.round(wallet.balance).toLocaleString("en-IN")}`
+                        ) : balance != null ? (
+                            `₹${Math.round(balance).toLocaleString("en-IN")}`
+                        ) : (
                             <div
                                 className="animate-pulse rounded-full"
                                 style={{

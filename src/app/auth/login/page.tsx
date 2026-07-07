@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/app/store/store";
+import { APP_CONFIGS } from "@/lib/data/constants";
 
 
 
@@ -37,11 +38,11 @@ export default function LoginPage() {
 
   function handlePhone(v: string) {
     setPhone(v.replace(/\D/g, "").slice(0, 10));
-    setError(prev=>({...prev, phone:null}));
+    setError(prev => ({ ...prev, phone: null }));
   }
   function handlePass(v: string) {
     setPassword(v);
-    setError(prev=>({...prev, password:null}));
+    setError(prev => ({ ...prev, password: null }));
   }
 
   async function onSubmit(
@@ -92,8 +93,8 @@ export default function LoginPage() {
       dispatch(setUser(res.data?.user));
       dispatch(fetchWallet());
       console.log(res);
-      const {name, _id} = res.data?.user;
-      localStorage.setItem("user", JSON.stringify({name, id:_id}) )
+      const { name, _id } = res.data?.user;
+      localStorage.setItem("user", JSON.stringify({ name, id: _id }))
 
       // optional success log
       console.log("Login successful");
@@ -134,7 +135,7 @@ export default function LoginPage() {
       <div className="relative z-10 flex items-center justify-between px-6 pt-12 pb-4">
         <Link href="/">
           <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "#fbbf24", letterSpacing: "-0.5px" }}>
-            odds<span style={{ color: "#fff" }}>96</span>
+            {APP_CONFIGS.nameAlpha}<span style={{ color: "#fff" }}>{APP_CONFIGS.nameNum}</span>
           </div>
         </Link>
         <div
@@ -297,12 +298,30 @@ export default function LoginPage() {
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                logining...
+                Logining...
               </span>
             ) : (
               "LOGIN →"
             )}
           </button>
+
+
+          <p
+            className="text-center text-sm"
+            style={{ color: "rgba(255,255,255,0.55)" }}
+          >
+            Don't have an account?{" "}
+            <Link
+              href="/auth"
+              className="font-bold transition-opacity hover:opacity-80"
+              style={{
+                color: "#fbbf24",
+                fontFamily: "'Orbitron', sans-serif",
+              }}
+            >
+              Sign Up
+            </Link>
+          </p>
 
           <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center", lineHeight: 1.5 }}>
             By continuing, you agree to our{" "}

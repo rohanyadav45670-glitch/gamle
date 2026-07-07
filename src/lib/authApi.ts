@@ -80,15 +80,15 @@ export async function registerUser(
     console.log("pass in api", password)
     const { data: res } = await axios.post(REGISTER_USER, { phone, name: username, password, referralCode }, { withCredentials: true });
     console.log(res)
-    if (!res.success) throw new Error(res.message || "Registration failed");
+    if (!res.success) throw new Error(res.message || "Registration failed! Try again");
     
-    const { name, _id } = res.user;
+    const { name, _id } = res.data?.user;
     localStorage.setItem("user", JSON.stringify({ name, id: _id }))
 
     const { token, wallet, user } = res.data;
     return { token, wallet, user };
   } catch (error: any) {
-    throw new Error(error.response?.data.message || "Registration failed")
+    throw new Error(error.response?.data.message || "Registration failed! Try again")
   }
 
 }

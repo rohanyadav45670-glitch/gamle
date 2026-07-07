@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useAviator } from "@/hooks/useAviator";
+import { useAviator } from "@/hooks/games/useAviator";
 import SkyCanvas from "@/components/games/aviator/SkyCanvas";
 import MultiplierDisplay from "@/components/games/aviator/MultiplierDisplay";
 import BetCard from "@/components/games/aviator/BetCard";
@@ -59,7 +59,7 @@ export default function AviatorPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col max-w-md mx-auto relative"
+      className="min-h-screen flex flex-col max-md:max-w-md mx-auto relative"
       style={{ background: "#0a0c14", fontFamily: "'Rajdhani', sans-serif", color: "#fff" }}
     >
 
@@ -134,6 +134,7 @@ export default function AviatorPage() {
           50% { opacity:0.5; transform:scale(1.3); }
         }
       `}</style>
+      
     </div>
   );
 }

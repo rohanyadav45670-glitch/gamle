@@ -1,49 +1,48 @@
 export type GamePhase = "idle" | "running" | "dead" | "won";
 export type Difficulty = "easy" | "medium" | "hard" | "hardcore";
+export type CellType = "empty" | "barrier" | "car" | "truck" | "bus" | "manhole" | "firetruck";
 
-export type ObjectType = "start" | "barrier" | "car" | "truck" | "bus" | "manhole";
-
-export interface RoadObject {
-  lane: number;
-  type: ObjectType;
-  col: number;           // which column (0..NUM_COLS-1)
-  carColor: string;
-  x: number;             // horizontal position for moving vehicles
-  speed: number;         // px/frame — negative = leftward
-  animOffset: number;
+export interface GridCell {
+  lane: number;   // row index, 0 = bottom start, increases upward
+  col: number;    // column 0,1,2
+  type: CellType;
+  color?: string; // vehicle color
+  mult?: number;  // multiplier label shown on manhole/obstacle
 }
 
 export interface Particle {
   id: number;
   x: number; y: number;
   vx: number; vy: number;
-  r: number;
-  color: string;
-  life: number;
-  maxLife: number;
+  r: number; color: string;
+  life: number; maxLife: number;
 }
 
-export interface DifficultyConfig {
+export interface DiffConfig {
   lanes: number;
-  hitBase: number;       // base hit probability
-  multStep: number;      // multiplier growth per lane
+  hitBase: number;
+  step: number;
   label: string;
+}
+
+export interface RoundRecord {
+  mult: number;
+  won: boolean;
+  lanes: number;
+  payout: number;
+  bet: number;
 }
 
 export interface GameState {
   phase: GamePhase;
-  lane: number;
+  lane: number;         // current lane chicken is on
   totalLanes: number;
   bet: number;
   mult: number;
   balance: number;
   diff: Difficulty;
-}
-
-export interface RoundRecord {
-  lanesReached: number;
-  mult: number;
-  won: boolean;
-  payout: number;
-  timestamp: number;
+  wins: number;
+  losses: number;
+  pnl: number;
+  history: RoundRecord[];
 }

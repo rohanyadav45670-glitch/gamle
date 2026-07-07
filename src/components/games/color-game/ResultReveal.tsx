@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { RoundResult } from "@/types/colorGame";
-import { numberToDisplayColors } from "@/lib/gameEngine";
+import { numberToDisplayColors } from "@/lib/engines/gameEngine";
 
 interface ResultRevealProps {
   result: RoundResult;
@@ -41,6 +41,7 @@ export default function ResultReveal({ result, isWin, betChoice, betAmount, payo
 
   return (
     <div className="flex flex-col items-center gap-4 py-4 animate-in fade-in zoom-in-95 duration-500">
+      
       {/* Number circle */}
       <div className="relative">
         {/* Glow */}

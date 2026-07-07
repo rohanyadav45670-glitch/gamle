@@ -15,16 +15,47 @@ import TransactionHistory from "@/components/wallet/TransactionHistory";
 import WalletSkeleton from "@/components/wallet/WalletSkeleton";
 import { DEPOSIT } from "@/lib/APIROTES";
 import axios from "axios";
-import { useRequestWithdrawMutation } from "@/app/store/apis/withdrawlsSlice";
+import { useGetMyWithdrawlsQuery, useRequestWithdrawMutation } from "@/app/store/apis/withdrawlsSlice";
 import { useRouter } from "next/navigation";
+import { useGetMyDepositsQuery } from "@/app/store/apis/depositsSlice";
 
 type Tab = "overview" | "deposit" | "withdraw" | "history";
+import {
+  LayoutDashboard,
+  CreditCard,
+  Landmark,
+} from "lucide-react";
 
-const TABS: { id: Tab; label: string; emoji: string }[] = [
-  { id: "overview", label: "Overview", emoji: "📊" },
-  { id: "deposit", label: "Deposit", emoji: "💳" },
-  { id: "withdraw", label: "Withdraw", emoji: "🏦" },
-  { id: "history", label: "History", emoji: "📋" },
+const TABS: {
+  id: Tab;
+  label: string;
+  emoji: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    emoji: "📊",
+    icon: <LayoutDashboard className="w-4 h-4" />,
+  },
+  {
+    id: "deposit",
+    label: "Deposit",
+    emoji: "💳",
+    icon: <CreditCard className="w-4 h-4" />,
+  },
+  {
+    id: "withdraw",
+    label: "Withdraw",
+    emoji: "🏦",
+    icon: <Landmark className="w-4 h-4" />,
+  },
+  // {
+  //   id: "history",
+  //   label: "History",
+  //   emoji: "📋",
+  //   icon: <History className="w-4 h-4" />,
+  // },
 ];
 
 export default function WalletPage() {
@@ -48,27 +79,6 @@ export default function WalletPage() {
     dispatch(fetchWallet());
   }
 
-  async function handleDeposit(amount: number, method: any, accountDetails?: any): Promise<void> {
-    try {
-      return await axios.post(DEPOSIT, { amount, method, accountDetails }, { withCredentials: true })
-    } catch (error: any) {
-      console.log("Deposit failed:", error);
-      throw new Error(error.response?.data?.message || "Deposit failed. Please try again."); // re-throw to let the DepositPanel know about the failure
-    }
-  }
-
-  async function handleWithdraw(amount: number, method: "bank" | "upi", accountDetails?: any) {
-    try {
-      console.log("Initiating withdraw request with data:", { amount, method, accountDetails });
-      
-      const res = await requestWithdraw({amount, method, accountDetails}).unwrap();
-
-      console.log("Withdraw request sent, awaiting response...", res);
-    } catch (error: any) {
-      console.log("Withdrawl failed", error);
-      throw new Error(error.data?.message || "Withdrawl failed. Please try again.");
-    }
-  }
 
   return (
     <div
@@ -86,8 +96,6 @@ export default function WalletPage() {
         input[type=number] { -moz-appearance: textfield; }
         ::-webkit-scrollbar { display: none; }
       `}</style>
-
-
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <header
@@ -140,8 +148,6 @@ export default function WalletPage() {
         </button>
       </header>
 
-
-
       {/* ── Balance Hero Card ────────────────────────────────────── */}
       {wallet && !loading && (
         <div className="px-4 pt-4 pb-2 mt-4">
@@ -184,7 +190,7 @@ export default function WalletPage() {
               {/* Quick action buttons */}
               <div className="grid grid-cols-2 gap-2.5">
                 <button
-                  onClick={() => setActiveTab("deposit")}
+                  onClick={() => route.push("/deposit")}
                   className="py-2.5 rounded-xl font-bold text-sm transition-all"
                   style={{
                     background: "linear-gradient(135deg,#16a34a,#22c55e)",
@@ -198,7 +204,7 @@ export default function WalletPage() {
                   + DEPOSIT
                 </button>
                 <button
-                  onClick={() => setActiveTab("withdraw")}
+                  onClick={() => route.push("/withdraw")}
                   className="py-2.5 rounded-xl font-bold text-sm transition-all"
                   style={{
                     background: "linear-gradient(135deg,#7c3aed,#a855f7)",
@@ -239,7 +245,7 @@ export default function WalletPage() {
                 : { color: "rgba(255,255,255,0.35)" }
             }
           >
-            <span>{tab.emoji}</span>
+            {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
@@ -273,11 +279,11 @@ export default function WalletPage() {
             {activeTab === "overview" && <WalletStats wallet={wallet} />}
 
             {activeTab === "deposit" && (
-              <DepositPanel balance={wallet.balance} onDeposit={handleDeposit} />
+              <DepositPanel />
             )}
 
             {activeTab === "withdraw" && (
-              <WithdrawPanel onWithdraw={handleWithdraw} balance={wallet.balance} />
+              <WithdrawPanel  />
             )}
 
             {activeTab === "history" && <TransactionHistory />}

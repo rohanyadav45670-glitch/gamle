@@ -89,9 +89,9 @@ export default function BetCard({
         <input
           type="number"
           value={amount}
-          min={1}
+          // min={1}
           disabled={phase !== "waiting" || placed}
-          onChange={(e) => onAmountChange(Math.max(1, Math.min(balance, Number(e.target.value) || 1)))}
+          onChange={(e) => onAmountChange( Math.min(balance, Number(e.target.value)) )}
           className="flex-1 text-center text-sm font-black rounded-lg py-1.5 outline-none disabled:opacity-50 tabular-nums"
           style={{
             background: "rgba(0,0,0,0.35)",

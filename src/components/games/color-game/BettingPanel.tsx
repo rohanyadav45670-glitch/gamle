@@ -8,7 +8,7 @@ import type { ColorChoice, GamePhase } from "@/types/colorGame";
 interface BettingPanelProps {
   phase: GamePhase;
   balance: number;
-  currentBet: { choice: { color: ColorChoice | null, size: "big" | "small" | null, number: number | null }; amount: number } | null;
+  currentBet: { choice: { color: ColorChoice | null, size: "big" | "small" | null, number: number | null }; amount: number, multiplier?: number } | null;
   onPlaceBet: (choice: { color: ColorChoice | null, size: "big" | "small" | null, number: number | null }, amount: number) => void;
   onCancelBet: () => void;
   multipliers: Record<string, number>;
@@ -45,10 +45,10 @@ export default function BettingPanel({
   onCancelBet,
   multipliers,
 }: BettingPanelProps) {
-  const [selectedColor, setSelectedColor] = useState<ColorChoice | null>(null);
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const [selectedSize, setSelectedSize] = useState<"big" | "small" | null>(null);
-  const [amount, setAmount] = useState(10);
+  const [selectedColor, setSelectedColor] = useState<ColorChoice | null>(currentBet?.choice.color || null);
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(currentBet?.choice.number || null);
+  const [selectedSize, setSelectedSize] = useState<"big" | "small" | null>(currentBet?.choice.size || null);
+  const [amount, setAmount] = useState(currentBet?.amount || 10);
 
   const isLocked = phase === "locked" || phase === "revealing" || phase === "result";
 
@@ -185,11 +185,11 @@ export default function BettingPanel({
             <span className="text-white/40 text-sm">₹</span>
             <input
               type="number"
-              min={1}
+              // min={1}
               max={balance}
               value={amount}
               disabled={isLocked || hasBet}
-              onChange={(e) => setAmount(Math.max(1, Math.min(balance, Number(e.target.value))))}
+              onChange={(e) => setAmount(Math.min(balance, Number(e.target.value)))}
               className="flex-1 bg-transparent text-white text-sm py-2.5 outline-none tabular-nums disabled:opacity-40"
             />
             <span className="text-white/30 text-xs">max: {balance}</span>
@@ -220,7 +220,7 @@ export default function BettingPanel({
             <div className="text-right">
               <p className="text-white/50 text-xs">Potential Win</p>
               <p className="text-green-400 font-bold">
-                ₹{((currentBet?.amount ?? 0) * (2)).toFixed(2)}
+                ₹{((currentBet?.amount ?? 0) * (currentBet?.multiplier || 2)).toFixed(2)}
               </p>
             </div>
           </div>
