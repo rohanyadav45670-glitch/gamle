@@ -35,13 +35,16 @@ export default function PaymentPage() {
   const searchParams = useSearchParams();
 
   const [amount, setAmount] = useState(500);
+  const [method, setMethod] = useState("upi");
+  const [coupon, setCoupon] = useState<string | null>(null);
+
   useEffect(() => {
     setAmount(Number(searchParams.get("amount") ?? 0));
+    setMethod(searchParams.get("method") ?? "upi");
+    setCoupon(searchParams.get("coupon"));
   }, [searchParams]);
 
-  const method = searchParams.get("method") || "upi"; // Default to QR if not specified
-  const coupon = searchParams.get("coupon") || null; // Optional coupon code
-
+  
   const [loading, setLoading] = useState(true);
 
   const [paymentConfig, setPaymentConfig] =
